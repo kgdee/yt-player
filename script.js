@@ -82,7 +82,6 @@ function onPlayerStateChange(event) {
       startModal.style.display = "none"
       document.querySelector(".tools-container").classList.remove("hidden")
       updateVolumeBtn(player.getVolume())
-      updateVolumeSelect()
       updateRateBtn(player.getPlaybackRate())
       break;
   
@@ -95,7 +94,6 @@ function onVolumeChange(event) {
   volume = player.getVolume()
   localStorage.setItem(storagePrefix + "volume", volume.toString())
   updateVolumeBtn(volume)
-  updateVolumeSelect()
 
   document.querySelector(".tools .volume .tool-modal").classList.remove("hidden")
 }
@@ -290,17 +288,6 @@ function updateVolumeBtn(volume) {
   volumeBtn.innerHTML = `
     ${icon}
     <span class="tooltip-text">Volume ${volume}% ${muted ? "(Muted)" : ""}</span>
-  `
-}
-
-function updateVolumeSelect() {
-  const volumes = [25,50,75]
-  const volumeSelect = document.querySelector(".volume-select")
- 
-  volumeSelect.innerHTML = `
-    ${volumes.map(function (volume) {
-      return `<button onclick="changeVolume(${volume})">${volume}%</button>`
-    }).join("")}
   `
 }
 
