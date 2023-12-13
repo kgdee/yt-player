@@ -61,6 +61,7 @@ function onPlayerReady(event) {
   else getVideoByClipboard()
 
   player.setVolume(volume)
+  player.getIframe().classList.add("hidden")
 }
 
 function onPlayerStateChange(event) {
@@ -72,16 +73,17 @@ function onPlayerStateChange(event) {
   // 5 – video cued
 
   switch (event.data) {
-    case -1:
+    case 1:
+      addHistory()
+      break;
+    case 5:
+      player.getIframe().classList.remove("hidden")
       document.title = player.getVideoData().title
       startModal.style.display = "none"
       document.querySelector(".tools-container").classList.remove("hidden")
       updateVolumeBtn(player.getVolume())
       updateVolumeSelect()
       updateRateBtn(player.getPlaybackRate())
-      break;
-    case 1:
-      addHistory()
       break;
   
     default:
@@ -132,6 +134,8 @@ function onPlayerError(event) {
 
 
 function getVideo(url) {
+  if (!playerIsReady) return
+
   const videoId = getVideoIdFromUrl(url)
   
   if (videoId) {
@@ -156,7 +160,6 @@ function getVideoIdFromUrl(url) {
 async function getVideoByClipboard() {
   try {
     if (!document.hasFocus()) return
-
     const clipboardText = await navigator.clipboard.readText();
 
     if (!clipboardText) return
@@ -227,6 +230,7 @@ function goHome() {
   document.querySelector(".tools-container").classList.add("hidden")
   if (videoIsLocked) lockVideo()
   currentVideoId = null
+  player.getIframe().classList.add("hidden")
 }
 
 lockBtn.addEventListener("click", lockVideo)
