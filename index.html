@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>YT Video Player</title>
+  <!-- Set Favicon -->
+  <link rel="icon" href="favicon.png" type="image/x-icon">
+  <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <iframe id="player" type="text/html" width="640" height="390"
+  src="http://www.youtube.com/embed/M7lc1UVf-VE?enablejsapi=1&rel=0&cc_load_policy=1"
+  frameborder="0"></iframe>
+  <!-- <div id="player"></div> -->
+
+  <div class="overlay hidden"></div>
+
+  <div class="start-modal">
+    <div class="modal-content">
+      <h1><i class="bi bi-play-fill"></i>YT VIDEO PLAYER</h1>
+      <input class="url-input" type="text" placeholder="Paste Video URL..." oninput="getVideo(this.value)" autofocus>
+      <p class="msg"></p>
+  
+      <div class="history">
+        <h1>History</h1>
+        <div class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tools-container">
+    <div class="tools">
+      <button class="tool home tooltip">
+        <i class="bi bi-house-door-fill"></i>
+        <span class="tooltip-text">Home</span>
+      </button>
+  
+      <button class="tool lock tooltip">
+        <i class="bi bi-unlock-fill"></i>
+        <span class="tooltip-text">Lock</span>
+      </button>
+  
+      <button class="tool copy tooltip">
+        <i class="bi bi-clipboard-fill"></i>
+        <span class="tooltip-text">Copy title</span>
+      </button>
+
+      <div class="tool-group volume">
+        <button class="tool volume-btn tooltip">
+          <i class="bi bi-volume-up-fill"></i>
+          <span class="tooltip-text">Volume 25%</span>
+        </button>
+        <div class="tool-modal">
+          <div class="modal-content volume-select"></div>
+        </div>
+      </div>
+
+      <div class="tool-group rate">
+        <button class="tool rate-btn tooltip">
+          <div class="text">1.5x</div>
+          <span class="tooltip-text">Speed 1.5</span>
+        </button>
+        <div class="tool-modal">
+          <div class="modal-content">
+            <button onclick="changePlayBackRate(0.75)">0.75x</button>
+            <button onclick="changePlayBackRate(1)">1x</button>
+            <button onclick="changePlayBackRate(1.25)">1.25x</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="tool stop tooltip">
+        <div class="text">Stop</div>
+        <span class="tooltip-text">Stop</span>
+      </button>
+    </div>
+  </div>
+</body>
+</html>
