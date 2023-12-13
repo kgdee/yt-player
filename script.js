@@ -267,6 +267,8 @@ function changeVolume(volume) {
   if (volume > 0) player.unMute()
 
   document.querySelector(".tools .volume .tool-modal").classList.add("hidden")
+
+  notice(`${volume}%`)
 }
 
 function updateVolumeBtn(volume) {
@@ -322,7 +324,35 @@ function seek(amount) {
   if (!currentVideoId || !playerIsReady) return
 
   player.seekTo(player.getCurrentTime() + amount)
+
+  const noticeContent = amount > 0 ? `
+    <div>
+      <i class="bi bi-caret-right-fill"></i>
+      <i class="bi bi-caret-right-fill"></i>
+    </div>
+    ${amount} seconds
+  ` : `
+    <div>
+      <i class="bi bi-caret-left-fill"></i>
+      <i class="bi bi-caret-left-fill"></i>
+    </div>
+    ${Math.abs(amount)} seconds
+  `
+
+  notice(noticeContent)
 }
+
+let noticeTimeOut = null
+function notice(content) {
+  const noticebox = document.querySelector(".noticebox")
+  clearTimeout(noticeTimeOut)
+  noticebox.classList.remove("hidden")
+  noticebox.innerHTML = content
+  noticeTimeOut = setTimeout(() => {
+    noticebox.classList.add("hidden")
+  }, 500);
+}
+
 
 document.addEventListener("keydown", function(event) {
   if (event.key === " " || event.key === "k") pauseVideo()
@@ -330,7 +360,9 @@ document.addEventListener("keydown", function(event) {
   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
     if (!currentVideoId || !playerIsReady) return
     const amount = event.key === "ArrowUp" ? 5 : -5
-    player.setVolume(player.getVolume() + amount)
+    const totalVolume = player.getVolume() + amount
+    player.setVolume(totalVolume)
+    notice(`${totalVolume}%`)
   }
 
   if (event.key === "j" || event.key === "ArrowLeft") seek(-3)
