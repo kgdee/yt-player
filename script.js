@@ -260,9 +260,10 @@ function mute() {
   player.isMuted() ? player.unMute() : player.mute()
 }
 
-function changeVolume(volume) {
+function changeVolume(value) {
   if (!currentVideoId || !playerIsReady) return
 
+  const volume = Math.min(Math.max(value, 0), 100)
   player.setVolume(volume)
   if (volume > 0) player.unMute()
 
@@ -360,7 +361,8 @@ document.addEventListener("keydown", function(event) {
   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
     if (!currentVideoId || !playerIsReady) return
     const amount = event.key === "ArrowUp" ? 5 : -5
-    const totalVolume = player.getVolume() + amount
+    
+    const totalVolume = Math.min(Math.max((player.getVolume() + amount), 0), 100)
     player.setVolume(totalVolume)
     notice(`${totalVolume}%`)
   }
