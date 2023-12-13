@@ -56,7 +56,7 @@ function onApiChange(event) {
 
 function onPlayerReady(event) {  
   playerIsReady = true
-  const videoId = urlParams.get('videoId')
+  const videoId = urlParams.get('videoid')
   if (videoId) getVideo(`https://www.youtube.com/watch?v=${videoId}`)
   else getVideoByClipboard()
 
@@ -135,7 +135,7 @@ function getVideo(url) {
   const videoId = getVideoIdFromUrl(url)
   
   if (videoId) {
-    window.history.pushState(null, null, `?videoId=${videoId}`)
+    window.history.pushState(null, null, `?videoid=${videoId}`)
 
     player.cueVideoById(videoId)
     currentVideoId = videoId
