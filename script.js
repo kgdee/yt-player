@@ -355,7 +355,7 @@ function notice(content) {
   noticebox.innerHTML = content
   noticeTimeOut = setTimeout(() => {
     noticebox.classList.add("hidden")
-  }, 500);
+  }, 1000);
 }
 
 
