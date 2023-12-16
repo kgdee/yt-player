@@ -38,8 +38,11 @@ let player;
 // after the API code downloads.
 function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
+    playerVars: {
+      'rel': 0,
+      'cc_load_policy': 1
+    },
     events: {
-      'onApiChange': onApiChange,
       'onReady': onPlayerReady,
       'onStateChange': onPlayerStateChange,
       'onVolumeChange': onVolumeChange,
@@ -49,10 +52,6 @@ function onYouTubeIframeAPIReady() {
   });
 }
 
-
-function onApiChange(event) {
-  
-}
 
 function onPlayerReady(event) {  
   playerIsReady = true
