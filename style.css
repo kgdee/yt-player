@@ -195,6 +195,12 @@ body {
   border-radius: 5px;
 }
 
+.start-modal .quick-btn {
+  padding: 1rem;
+  width: 100%;
+  border-radius: 5px;
+}
+
 .start-modal .history {
   width: 100%;
 }
@@ -214,14 +220,18 @@ body {
 
 .start-modal .history .list .item {
   text-align: center;
-  background-color: white;
+  background-color: transparent;
   border-radius: 5px;
-  color: #333;
+  color: white;
   padding: 0.5rem;
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis; 
+}
+
+.start-modal .history .list .item:hover {
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 

@@ -153,21 +153,36 @@ function getVideoIdFromUrl(url) {
   return videoIdMatch ? videoIdMatch[1] : null;
 }
 
+async function getVideoIdFromClipboard() {
+  if (!document.hasFocus()) return null
+  const clipboardText = await navigator.clipboard.readText();
+  if (!clipboardText) return null
+  const videoId = getVideoIdFromUrl(clipboardText)
+  if (!videoId) return null
+  return videoId
+}
 
 async function getVideoByClipboard() {
   try {
-    if (!document.hasFocus()) return
-    const clipboardText = await navigator.clipboard.readText();
-
-    if (!clipboardText) return
-
-    const videoId = getVideoIdFromUrl(clipboardText)
+    const videoId = await getVideoIdFromClipboard()
 
     if (!videoId || videoId === currentVideoId) return
 
-    getVideo(clipboardText)
+    getVideo(`https://www.youtube.com/watch?v=${videoId}`)
+    return true
   } catch (error) {
     console.error(error)
+    return false
+  }
+}
+
+async function updateGetVideoBtn() {
+  const getVideoBtn = document.querySelector(".start-modal .quick-btn")
+  
+  if (await getVideoIdFromClipboard()) {
+    getVideoBtn.classList.remove("hidden")
+  } else {
+    getVideoBtn.classList.add("hidden")
   }
 }
 
@@ -228,6 +243,7 @@ function goHome() {
   if (videoIsLocked) lockVideo()
   currentVideoId = null
   player.getIframe().classList.add("hidden")
+  updateGetVideoBtn()
 }
 
 lockBtn.addEventListener("click", lockVideo)
@@ -344,10 +360,21 @@ function notice(content) {
   }, 1000);
 }
 
+function toggleFullscreen() {
+  var iframe = document.getElementById('player');
+  if (!document.fullscreenElement) {
+    iframe.requestFullscreen().catch(err => {
+      console.error('Error attempting to enable full-screen mode:', err);
+    });
+  } else {
+    document.exitFullscreen();
+  }
+}
 
 document.addEventListener("keydown", function(event) {
+  // Play/Pause
   if (event.key === " " || event.key === "k") pauseVideo()
-
+  // Volume
   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
     if (!currentVideoId || !playerIsReady) return
     const amount = event.key === "ArrowUp" ? 5 : -5
@@ -356,10 +383,11 @@ document.addEventListener("keydown", function(event) {
     player.setVolume(totalVolume)
     notice(`${totalVolume}%`)
   }
-
+  // Jump backward/forward
   if (event.key === "j" || event.key === "ArrowLeft") seek(-3)
-
   if (event.key === "l" || event.key === "ArrowRight") seek(3)
+  // fullscreen
+  if (event.key === 'f') toggleFullscreen()
 })
 
 document.addEventListener("visibilitychange", function() {
@@ -367,12 +395,16 @@ document.addEventListener("visibilitychange", function() {
   if (!videoIsLocked && !document.hidden && playerIsReady) {
     // Wait until tab has focus
     setTimeout(() => {
-      getVideoByClipboard()
-    }, "1000");
+      if (!getVideoByClipboard()) updateGetVideoBtn()
+    }, 1000);
   }
 
 });
 
 document.addEventListener("DOMContentLoaded", function() {
+  setTimeout(() => {
+    updateGetVideoBtn()
+  }, 1000);
+
   updateHistory()
 })
