@@ -57,7 +57,7 @@ function onPlayerReady(event) {
   playerIsReady = true
   const videoId = urlParams.get('videoid')
   if (videoId) getVideo(`https://www.youtube.com/watch?v=${videoId}`)
-  else getVideoByClipboard()
+  else if (!getVideoByClipboard()) updateGetVideoBtn()
 
   player.setVolume(volume)
   player.getIframe().classList.add("hidden")
@@ -377,12 +377,23 @@ document.addEventListener("keydown", function(event) {
   // Volume
   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
     if (!currentVideoId || !playerIsReady) return
-    const amount = event.key === "ArrowUp" ? 5 : -5
+    let amount = 5
+    const playerVol = player.getVolume()
+    if (event.key === "ArrowUp") {
+      amount = playerVol < 5 ? 1 : 5
+    } else {
+      amount = playerVol <= 5 ? -1 : -5
+    }
     
-    const totalVolume = Math.min(Math.max((player.getVolume() + amount), 0), 100)
+    const totalVolume = Math.min(Math.max((playerVol + amount), 0), 100)
     player.setVolume(totalVolume)
-    notice(`${totalVolume}%`)
+    notice(`
+    <div>
+      <i class="bi bi-volume-down-fill"></i>
+      ${totalVolume}%
+    </div>`)
   }
+  if (event.key === "m") mute()
   // Jump backward/forward
   if (event.key === "j" || event.key === "ArrowLeft") seek(-3)
   if (event.key === "l" || event.key === "ArrowRight") seek(3)
@@ -402,9 +413,5 @@ document.addEventListener("visibilitychange", function() {
 });
 
 document.addEventListener("DOMContentLoaded", function() {
-  setTimeout(() => {
-    updateGetVideoBtn()
-  }, 1000);
-
   updateHistory()
 })
