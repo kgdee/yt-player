@@ -12,6 +12,7 @@ const rateBtn = document.querySelector(".tools .rate .rate-btn")
 const stopBtn = document.querySelector(".tools .stop")
 const historyList = document.querySelector(".history .list")
 
+let loading = false
 let playerIsReady = false
 let currentVideoId = null
 let videoIsLocked = false
@@ -24,6 +25,33 @@ const urlParams = new URLSearchParams(queryString)
 const savedVolume = parseInt(localStorage.getItem(storagePrefix + "volume"))
 let volume = Number.isInteger(savedVolume) ? parseInt(savedVolume) : 50
 
+
+function startup() {
+  window.history.pushState(null, null, window.location.pathname)
+
+  document.title = "YT Video Player"
+  msg.innerHTML = ""
+  startModal.style.display = "block"
+  document.querySelector(".tools-container").classList.add("hidden")
+  currentVideoId = null
+  
+  if (playerIsReady) {
+    if (videoIsLocked) lockVideo()
+    player.pauseVideo()
+    player.setVolume(volume)
+    player.getIframe().classList.add("hidden")
+  }
+}
+
+function showPlayer() {
+  player.getIframe().classList.remove("hidden")
+  document.title = player.getVideoData().title
+  startModal.style.display = "none"
+  document.querySelector(".tools-container").classList.remove("hidden")
+  updateVolumeBtn(player.getVolume())
+  updateRateBtn(player.getPlaybackRate())
+  loading = false
+}
 
 // This code loads the IFrame Player API code asynchronously.
 var tag = document.createElement('script');
@@ -55,12 +83,11 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {  
   playerIsReady = true
+  startup()
+
   const videoId = urlParams.get('videoid')
   if (videoId) getVideo(`https://www.youtube.com/watch?v=${videoId}`)
-  else if (!getVideoByClipboard()) updateGetVideoBtn()
-
-  player.setVolume(volume)
-  player.getIframe().classList.add("hidden")
+  else getVideoFromClipboard(false)
 }
 
 function onPlayerStateChange(event) {
@@ -76,12 +103,7 @@ function onPlayerStateChange(event) {
       addHistory()
       break;
     case 5:
-      player.getIframe().classList.remove("hidden")
-      document.title = player.getVideoData().title
-      startModal.style.display = "none"
-      document.querySelector(".tools-container").classList.remove("hidden")
-      updateVolumeBtn(player.getVolume())
-      updateRateBtn(player.getPlaybackRate())
+      showPlayer()
       break;
   
     default:
@@ -107,6 +129,7 @@ function onPlayerError(event) {
 
   startModal.style.display = "block"
   urlInput.value = ""
+  loading = false
 
   switch (event.data) {
     case 2:
@@ -131,7 +154,8 @@ function onPlayerError(event) {
 
 
 function getVideo(url) {
-  if (!playerIsReady) return
+  if (!playerIsReady || loading) return
+  loading = true
 
   const videoId = getVideoIdFromUrl(url)
   
@@ -162,27 +186,28 @@ async function getVideoIdFromClipboard() {
   return videoId
 }
 
-async function getVideoByClipboard() {
+async function getVideoFromClipboard(byBtn) {
+  if (loading) return
+  loading = true
   try {
     const videoId = await getVideoIdFromClipboard()
 
-    if (!videoId || videoId === currentVideoId) return
+    if (!byBtn && videoId === currentVideoId) {
+      loading = false
+      return
+    }
+
+    if (!videoId) {
+      if (byBtn) msg.textContent = `Error: The content in the clipboard is not recognized as a valid YouTube video URL!`
+      loading = false
+      return
+    }
 
     getVideo(`https://www.youtube.com/watch?v=${videoId}`)
-    return true
   } catch (error) {
     console.error(error)
-    return false
-  }
-}
-
-async function updateGetVideoBtn() {
-  const getVideoBtn = document.querySelector(".start-modal .quick-btn")
-  
-  if (await getVideoIdFromClipboard()) {
-    getVideoBtn.classList.remove("hidden")
-  } else {
-    getVideoBtn.classList.add("hidden")
+    if (byBtn) msg.textContent = `Error: ` + error
+    loading = false
   }
 }
 
@@ -234,16 +259,7 @@ function pauseVideo() {
 
 homeBtn.addEventListener("click", goHome)
 function goHome() {
-  window.history.pushState(null, null, window.location.pathname)
-
-  player.pauseVideo()
-  document.title = "YT Video Player"
-  startModal.style.display = "block"
-  document.querySelector(".tools-container").classList.add("hidden")
-  if (videoIsLocked) lockVideo()
-  currentVideoId = null
-  player.getIframe().classList.add("hidden")
-  updateGetVideoBtn()
+  startup()
 }
 
 lockBtn.addEventListener("click", lockVideo)
@@ -402,11 +418,10 @@ document.addEventListener("keydown", function(event) {
 })
 
 document.addEventListener("visibilitychange", function() {
-
   if (!videoIsLocked && !document.hidden && playerIsReady) {
     // Wait until tab has focus
     setTimeout(() => {
-      if (!getVideoByClipboard()) updateGetVideoBtn()
+      getVideoFromClipboard(false)
     }, 1000);
   }
 
