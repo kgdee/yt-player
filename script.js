@@ -12,7 +12,8 @@ const rateBtn = document.querySelector(".tools .rate .rate-btn")
 const stopBtn = document.querySelector(".tools .stop")
 const historyList = document.querySelector(".history .list")
 
-let loading = false
+let loadingVideo = false
+let loadingClipboard = false
 let playerIsReady = false
 let currentVideoId = null
 let videoIsLocked = false
@@ -50,7 +51,8 @@ function showPlayer() {
   document.querySelector(".tools-container").classList.remove("hidden")
   updateVolumeBtn(player.getVolume())
   updateRateBtn(player.getPlaybackRate())
-  loading = false
+  loadingVideo = false
+  loadingClipboard = false
 }
 
 // This code loads the IFrame Player API code asynchronously.
@@ -129,7 +131,8 @@ function onPlayerError(event) {
 
   startModal.style.display = "block"
   urlInput.value = ""
-  loading = false
+  loadingVideo = false
+  loadingClipboard = false
 
   switch (event.data) {
     case 2:
@@ -154,8 +157,8 @@ function onPlayerError(event) {
 
 
 function getVideo(url) {
-  if (!playerIsReady || loading) return
-  loading = true
+  if (!playerIsReady || loadingVideo) return
+  loadingVideo = true
 
   const videoId = getVideoIdFromUrl(url)
   
@@ -187,19 +190,19 @@ async function getVideoIdFromClipboard() {
 }
 
 async function getVideoFromClipboard(byBtn) {
-  if (loading) return
-  loading = true
+  if (loadingClipboard) return
+  loadingClipboard = true
   try {
     const videoId = await getVideoIdFromClipboard()
 
     if (!byBtn && videoId === currentVideoId) {
-      loading = false
+      loadingClipboard = false
       return
     }
 
     if (!videoId) {
       if (byBtn) msg.textContent = `Error: The content in the clipboard is not recognized as a valid YouTube video URL!`
-      loading = false
+      loadingClipboard = false
       return
     }
 
@@ -207,7 +210,7 @@ async function getVideoFromClipboard(byBtn) {
   } catch (error) {
     console.error(error)
     if (byBtn) msg.textContent = `Error: ` + error
-    loading = false
+    loadingClipboard = false
   }
 }
 
@@ -387,6 +390,8 @@ function toggleFullscreen() {
   }
 }
 
+
+
 document.addEventListener("keydown", function(event) {
   // Play/Pause
   if (event.key === " " || event.key === "k") pauseVideo()
@@ -430,3 +435,18 @@ document.addEventListener("visibilitychange", function() {
 document.addEventListener("DOMContentLoaded", function() {
   updateHistory()
 })
+
+
+
+if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    
+  function debug() {
+    console.log("\nDEBUG:")
+    console.log("loadingVideo: ", loadingVideo)
+    console.log("loadingClipboard: ", loadingClipboard)
+  }
+
+  document.addEventListener("keydown", function(event) {
+    if (event.key === "d") debug()
+  })   
+}
