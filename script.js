@@ -33,13 +33,14 @@ function startup() {
   window.history.pushState(null, null, window.location.pathname)
 
   document.title = "YT Video Player"
+  urlInput.value = ""
   msg.innerHTML = ""
   startModal.style.display = "block"
   document.querySelector(".tools-container").classList.add("hidden")
   currentVideoId = null
   
   if (playerIsReady) {
-    if (videoIsLocked) lockVideo()
+    // if (videoIsLocked) lockVideo()
     player.pauseVideo()
     player.setVolume(volume)
     player.getIframe().classList.add("hidden")
@@ -131,8 +132,7 @@ function onPlaybackRateChange(event) {
 function onPlayerError(event) {
   console.error('An error occurred: ', event.data);
 
-  startModal.style.display = "block"
-  urlInput.value = ""
+  startup()
   loading = false
 
   switch (event.data) {
