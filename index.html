@@ -24,7 +24,7 @@
     <div class="modal-content">
       <h1><i class="bi bi-play-fill"></i>YT VIDEO PLAYER</h1>
       <input class="url-input" type="text" placeholder="Paste Video URL..." oninput="getVideo(this.value)" autofocus>
-      <button class="quick-btn" onclick="getVideoFromClipboard(true)">Or check my clipboard!</button>
+      <button class="quick-btn hidden" onclick="getVideoFromClipboard(true)">Or check my clipboard!</button>
       <p class="msg"></p>
   
       <div class="history">
@@ -41,9 +41,14 @@
         <span class="tooltip-text">Home</span>
       </button>
   
-      <button class="tool lock tooltip">
-        <i class="bi bi-unlock-fill"></i>
-        <span class="tooltip-text">Lock</span>
+      <button class="tool lock tooltip hidden">
+        <i class="bi bi-lock-fill"></i>
+        <span class="tooltip-text">Unlock</span>
+      </button>
+
+      <button class="tool play tooltip hidden">
+        <i class="bi bi-play-fill"></i>
+        <span class="tooltip-text">Play next</span>
       </button>
   
       <button class="tool copy tooltip">
@@ -68,7 +73,7 @@
       <div class="tool-group rate">
         <button class="tool rate-btn tooltip">
           <div class="text">1.5x</div>
-          <span class="tooltip-text">Speed 1.5</span>
+          <span class="tooltip-text">Playback speed 1.5</span>
         </button>
         <div class="tool-modal">
           <div class="modal-content">

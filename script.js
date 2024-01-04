@@ -4,19 +4,21 @@ const storagePrefix = 'yt-player_'
 const startModal = document.querySelector(".start-modal")
 const urlInput = document.querySelector(".url-input")
 const msg = document.querySelector(".msg")
+const quickBtn = document.querySelector(".quick-btn")
 const homeBtn = document.querySelector(".tools .home")
 const lockBtn = document.querySelector(".tools .lock")
+const playBtn = document.querySelector(".tools .play")
 const copyBtn = document.querySelector(".tools .copy")
 const volumeBtn = document.querySelector(".tools .volume-btn")
 const rateBtn = document.querySelector(".tools .rate .rate-btn")
 const stopBtn = document.querySelector(".tools .stop")
 const historyList = document.querySelector(".history .list")
 
-let loadingVideo = false
-let loadingClipboard = false
+let loading = false
 let playerIsReady = false
 let currentVideoId = null
-let videoIsLocked = false
+let videoIsLocked = true
+let clipboardAccess = false
 
 let history = JSON.parse(localStorage.getItem(storagePrefix + "history")) || []
 
@@ -45,14 +47,14 @@ function startup() {
 }
 
 function showPlayer() {
+  urlInput.value = ""
   player.getIframe().classList.remove("hidden")
   document.title = player.getVideoData().title
   startModal.style.display = "none"
   document.querySelector(".tools-container").classList.remove("hidden")
   updateVolumeBtn(player.getVolume())
   updateRateBtn(player.getPlaybackRate())
-  loadingVideo = false
-  loadingClipboard = false
+  loading = false
 }
 
 // This code loads the IFrame Player API code asynchronously.
@@ -89,7 +91,7 @@ function onPlayerReady(event) {
 
   const videoId = urlParams.get('videoid')
   if (videoId) getVideo(`https://www.youtube.com/watch?v=${videoId}`)
-  else getVideoFromClipboard(false)
+  else if (clipboardAccess) getVideoFromClipboard(false)
 }
 
 function onPlayerStateChange(event) {
@@ -131,8 +133,7 @@ function onPlayerError(event) {
 
   startModal.style.display = "block"
   urlInput.value = ""
-  loadingVideo = false
-  loadingClipboard = false
+  loading = false
 
   switch (event.data) {
     case 2:
@@ -157,8 +158,8 @@ function onPlayerError(event) {
 
 
 function getVideo(url) {
-  if (!playerIsReady || loadingVideo) return
-  loadingVideo = true
+  if (!playerIsReady || loading) return
+  loading = true
 
   const videoId = getVideoIdFromUrl(url)
   
@@ -167,17 +168,36 @@ function getVideo(url) {
 
     player.cueVideoById(videoId)
     currentVideoId = videoId
-  }
-  else {  
+  } else {  
     urlInput.value = ""
-    msg.textContent = "Invalid URL!"
+    msg.textContent = "Error: Invalid URL!"
+    loading = false
   }
 }
 
 function getVideoIdFromUrl(url) {
   // Extract video ID from YouTube URL
-  const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=))([^"&?\/\s]{11})/);
+  const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=))([^"&?\/\s]{11})/);
   return videoIdMatch ? videoIdMatch[1] : null;
+}
+
+async function checkClipboardPermission() {
+  try {
+    const readPermissionStatus = await navigator.permissions.query({ name: 'clipboard-read' });
+    const writePermissionStatus = await navigator.permissions.query({ name: 'clipboard-write' });
+
+    if (readPermissionStatus.state === 'granted' && writePermissionStatus.state === 'granted') {
+      // Clipboard access is granted
+
+      playBtn.classList.remove("hidden")
+      // lockBtn.classList.remove("hidden")
+      quickBtn.classList.remove("hidden")
+    } else {
+      console.log('Clipboard access is not granted');
+    }
+  } catch (error) {
+    console.error('Error checking clipboard permissions:', error);
+  }
 }
 
 async function getVideoIdFromClipboard() {
@@ -186,31 +206,30 @@ async function getVideoIdFromClipboard() {
   if (!clipboardText) return null
   const videoId = getVideoIdFromUrl(clipboardText)
   if (!videoId) return null
-  return videoId
+  return videoId 
 }
 
-async function getVideoFromClipboard(byBtn) {
-  if (loadingClipboard) return
-  loadingClipboard = true
+async function getVideoFromClipboard(showMsg) {
+  if (loading) return
+  loading = true
   try {
     const videoId = await getVideoIdFromClipboard()
-
-    if (!byBtn && videoId === currentVideoId) {
-      loadingClipboard = false
-      return
-    }
-
+    
     if (!videoId) {
-      if (byBtn) msg.textContent = `Error: The content in the clipboard is not recognized as a valid YouTube video URL!`
-      loadingClipboard = false
+      if (showMsg) msg.textContent = `Error: Invalid URL!`
+      loading = false
+      return
+    } else if (videoId === currentVideoId) {
+      loading = false
       return
     }
 
+    loading = false
     getVideo(`https://www.youtube.com/watch?v=${videoId}`)
   } catch (error) {
     console.error(error)
-    if (byBtn) msg.textContent = `Error: ` + error
-    loadingClipboard = false
+    if (showMsg) msg.textContent = `Error: ` + error
+    loading = false
   }
 }
 
@@ -277,6 +296,8 @@ function lockVideo() {
   : `<i class="bi bi-unlock-fill"></i><span class="tooltip-text">Lock</span>`
 }
 
+playBtn.addEventListener("click", ()=>getVideoFromClipboard(true))
+
 copyBtn.addEventListener("click", copyTitle)
 async function copyTitle() {
   if (!currentVideoId || !playerIsReady) return
@@ -335,7 +356,7 @@ function changePlayBackRate(value) {
 function updateRateBtn(rate) {
   rateBtn.innerHTML = `
     <div class="text">${rate}x</div>
-    <span class="tooltip-text">Speed ${rate}x</span>
+    <span class="tooltip-text">Playback speed ${rate}x</span>
   `
 }
 
@@ -423,6 +444,8 @@ document.addEventListener("keydown", function(event) {
 })
 
 document.addEventListener("visibilitychange", function() {
+  if (!clipboardAccess) return
+
   if (!videoIsLocked && !document.hidden && playerIsReady) {
     // Wait until tab has focus
     setTimeout(() => {
@@ -432,21 +455,17 @@ document.addEventListener("visibilitychange", function() {
 
 });
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() { 
+  checkClipboardPermission()
   updateHistory()
 })
 
 
 
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    
-  function debug() {
-    console.log("\nDEBUG:")
-    console.log("loadingVideo: ", loadingVideo)
-    console.log("loadingClipboard: ", loadingClipboard)
-  }
 
-  document.addEventListener("keydown", function(event) {
-    if (event.key === "d") debug()
-  })   
-}
+// document.addEventListener("keydown", function(event) {
+//   if (event.key === "d") {
+//     console.log("loading: ", loading)
+//     console.log("currentVideoId: ", currentVideoId)
+//   }
+// })
