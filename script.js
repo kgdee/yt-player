@@ -5,6 +5,7 @@ const startModal = document.querySelector(".start-modal")
 const urlInput = document.querySelector(".url-input")
 const msg = document.querySelector(".msg")
 const quickBtn = document.querySelector(".quick-btn")
+const overlay = document.querySelector(".overlay")
 const homeBtn = document.querySelector(".tools .home")
 const lockBtn = document.querySelector(".tools .lock")
 const playBtn = document.querySelector(".tools .play")
@@ -47,6 +48,15 @@ function startup() {
   }
 }
 
+const focusBtn = document.getElementById("focusBtn")
+function update() {
+  if (currentVideoId && playerIsReady) focusBtn.focus()
+  
+  setTimeout(() => {
+    update()
+  }, 250);
+}
+
 function showPlayer() {
   urlInput.value = ""
   player.getIframe().classList.remove("hidden")
@@ -73,7 +83,7 @@ function onYouTubeIframeAPIReady() {
   player = new YT.Player('player', {
     playerVars: {
       'rel': 0,
-      'cc_load_policy': 1
+      'cc_load_policy': 1,
     },
     events: {
       'onReady': onPlayerReady,
@@ -84,7 +94,6 @@ function onYouTubeIframeAPIReady() {
     }
   });
 }
-
 
 function onPlayerReady(event) {  
   playerIsReady = true
@@ -106,6 +115,11 @@ function onPlayerStateChange(event) {
   switch (event.data) {
     case 1:
       addHistory()
+      overlay.classList.remove("hidden")
+      overlay.focus()
+      break;
+    case 2:
+      overlay.classList.add("hidden")
       break;
     case 5:
       showPlayer()
@@ -116,12 +130,30 @@ function onPlayerStateChange(event) {
   }
 }
 
+function volumeIcon() {
+  const volume = player.getVolume()
+  let icon = ""
+  if (volume <= 0 || player.isMuted()) 
+    icon = `<i class="bi bi-volume-mute-fill"></i>`
+  else if (volume <= 50) 
+    icon = `<i class="bi bi-volume-down-fill"></i>`
+  else 
+    icon = `<i class="bi bi-volume-up-fill"></i>`
+
+  return icon
+}
+
 function onVolumeChange(event) {
   volume = player.getVolume()
   localStorage.setItem(storagePrefix + "volume", volume.toString())
   updateVolumeBtn(volume)
 
   document.querySelector(".tools .volume .tool-modal").classList.remove("hidden")
+  notice(`
+    <div>
+      ${volumeIcon() + " " + volume}%
+    </div>`)
+  console.log('vol')
 }
 function onPlaybackRateChange(event) {
   updateRateBtn(player.getPlaybackRate())
@@ -273,6 +305,8 @@ function updateHistory() {
 
 
 function pauseVideo() {
+  if (!currentVideoId || !playerIsReady) return
+  
   const playing = player.getPlayerState() === YT.PlayerState.PLAYING
   playing ? player.pauseVideo() : player.playVideo()
 }
@@ -320,29 +354,15 @@ function mute() {
 function changeVolume(value) {
   if (!currentVideoId || !playerIsReady) return
 
+  document.querySelector(".tools .volume .tool-modal").classList.add("hidden")
   const volume = Math.min(Math.max(value, 0), 100)
   player.setVolume(volume)
-  if (volume > 0) player.unMute()
-
-  document.querySelector(".tools .volume .tool-modal").classList.add("hidden")
-
-  notice(`${volume}%`)
 }
 
 function updateVolumeBtn(volume) {
-  let muted = player.isMuted()
-  let icon = ""
-
-  if (volume <= 0 || muted) 
-    icon = `<i class="bi bi-volume-mute-fill"></i>`
-  else if (volume <= 50) 
-    icon = `<i class="bi bi-volume-down-fill"></i>`
-  else 
-    icon = `<i class="bi bi-volume-up-fill"></i>`
-
   volumeBtn.innerHTML = `
-    ${icon}
-    <span class="tooltip-text">Volume ${volume}% ${muted ? "(Muted)" : ""}</span>
+    ${volumeIcon()}
+    <span class="tooltip-text">Volume ${volume}% ${player.isMuted() ? "(Muted)" : ""}</span>
   `
 }
 
@@ -429,17 +449,12 @@ document.addEventListener("keydown", function(event) {
     
     const totalVolume = Math.min(Math.max((playerVol + amount), 0), 100)
     player.setVolume(totalVolume)
-    notice(`
-    <div>
-      <i class="bi bi-volume-down-fill"></i>
-      ${totalVolume}%
-    </div>`)
   }
   if (event.key === "m") mute()
   // Jump backward/forward
   if (event.key === "j" || event.key === "ArrowLeft") seek(-3)
   if (event.key === "l" || event.key === "ArrowRight") seek(3)
-  // fullscreen
+  // Fullscreen
   if (event.key === 'f') toggleFullscreen()
 })
 
@@ -458,6 +473,7 @@ document.addEventListener("visibilitychange", function() {
 document.addEventListener("DOMContentLoaded", function() { 
   checkClipboardPermission()
   updateHistory()
+  update()
 })
 
 

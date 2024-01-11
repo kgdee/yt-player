@@ -18,7 +18,7 @@
   <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
   <div id="player"></div>
 
-  <div class="overlay hidden"></div>
+  <button class="overlay hidden" onclick="pauseVideo()"></button>
 
   <div class="start-modal">
     <div class="modal-content">
@@ -92,5 +92,6 @@
   </div>
 
   <div class="noticebox hidden"></div>
+  <button id="focusBtn" style="position: absolute; left: 0; top: 0; transform: translateY(-100%);"></button>
 </body>
 </html>
