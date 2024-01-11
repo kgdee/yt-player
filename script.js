@@ -169,7 +169,6 @@ function volumeIcon() {
 }
 
 function onVolumeChange(event) {
-  console.log("vol")
   if (volume === player.getVolume() && muted === player.isMuted()) return
 
   volume = player.getVolume()
