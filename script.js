@@ -5,7 +5,6 @@ const startModal = document.querySelector(".start-modal")
 const urlInput = document.querySelector(".url-input")
 const msg = document.querySelector(".msg")
 const quickBtn = document.querySelector(".quick-btn")
-const overlay = document.querySelector(".overlay")
 const toolbar = document.querySelector(".tools-container")
 const homeBtn = document.querySelector(".tools .home")
 const lockBtn = document.querySelector(".tools .lock")
@@ -132,17 +131,13 @@ function onPlayerStateChange(event) {
 
   switch (event.data) {
     case 0:
-      overlay.classList.add("hidden")
       showToolbar()
       break;
     case 1:
       addHistory()
-      overlay.classList.remove("hidden")
-      overlay.focus()
       toolbar.style.opacity = null
       break;
     case 2:
-      overlay.classList.add("hidden")
       showToolbar()
       break;
     case 5:
