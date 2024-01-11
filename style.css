@@ -70,12 +70,20 @@ body {
 
 .tools-container {
   position: fixed;
-  top: 50%;
-  left: 1rem;
-  transform: translate(0,-50%);
+  top: 55px;
+  bottom: 55px;
+  left: 0;
+  width: 15%;
+  min-width: 75px;
+  /* border: 1px solid red; */
+  display: flex;
+  align-items: center;
+  transition: 0.25s;
+  opacity: 0;
 }
 
 .tools {
+  margin-left: 10px;
   display: grid;
   grid-template-columns: 50px;
   grid-auto-rows: 50px;
@@ -83,10 +91,12 @@ body {
   background-color: rgba(0, 0, 0, 0.5);
   border: 1px solid white;
   border-radius: 5px;
-  transition: 0.25s;
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
+.tools-container:hover {
+  opacity: 1;
+}
 .tools:hover {
   opacity: 1;
 }

@@ -18,7 +18,7 @@
   <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
   <div id="player"></div>
 
-  <button class="overlay hidden" onclick="pauseVideo()"></button>
+  <div class="overlay hidden" onclick="pauseVideo()"></div>
 
   <div class="start-modal">
     <div class="modal-content">
@@ -34,8 +34,8 @@
     </div>
   </div>
 
-  <div class="tools-container hidden">
-    <div class="tools">
+  <div class="tools-container hidden" onclick="pauseVideo()">
+    <div class="tools" onclick="stopPropagation(event)">
       <button class="tool home tooltip">
         <i class="bi bi-house-door-fill"></i>
         <span class="tooltip-text">Home</span>

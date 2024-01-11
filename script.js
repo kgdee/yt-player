@@ -30,6 +30,10 @@ const savedVolume = parseInt(localStorage.getItem(storagePrefix + "volume"))
 let volume = Number.isInteger(savedVolume) ? parseInt(savedVolume) : 50
 
 
+function stopPropagation(event) {
+  event.stopPropagation()
+}
+
 function startup() {
   window.history.pushState(null, null, window.location.pathname)
 
