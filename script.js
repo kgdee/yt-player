@@ -6,6 +6,7 @@ const urlInput = document.querySelector(".url-input")
 const msg = document.querySelector(".msg")
 const quickBtn = document.querySelector(".quick-btn")
 const overlay = document.querySelector(".overlay")
+const toolbar = document.querySelector(".tools-container")
 const homeBtn = document.querySelector(".tools .home")
 const lockBtn = document.querySelector(".tools .lock")
 const playBtn = document.querySelector(".tools .play")
@@ -28,6 +29,7 @@ const urlParams = new URLSearchParams(queryString)
 
 const savedVolume = parseInt(localStorage.getItem(storagePrefix + "volume"))
 let volume = Number.isInteger(savedVolume) ? parseInt(savedVolume) : 50
+let muted = false
 
 
 function stopPropagation(event) {
@@ -41,7 +43,7 @@ function startup() {
   urlInput.value = ""
   msg.innerHTML = ""
   startModal.style.display = "block"
-  document.querySelector(".tools-container").classList.add("hidden")
+  toolbar.classList.add("hidden")
   currentVideoId = null
   
   if (playerIsReady) {
@@ -49,6 +51,7 @@ function startup() {
     player.pauseVideo()
     player.setVolume(volume)
     player.getIframe().classList.add("hidden")
+    muted = player.isMuted()
   }
 }
 
@@ -66,10 +69,21 @@ function showPlayer() {
   player.getIframe().classList.remove("hidden")
   document.title = player.getVideoData().title
   startModal.style.display = "none"
-  document.querySelector(".tools-container").classList.remove("hidden")
   updateVolumeBtn(player.getVolume())
   updateRateBtn(player.getPlaybackRate())
+  toolbar.classList.remove("hidden")
+  showToolbar()
+
   loading = false
+}
+
+let toolbarTimeout = null
+function showToolbar() {
+  toolbar.style.opacity = 1
+  clearTimeout(toolbarTimeout)
+  toolbarTimeout = setTimeout(() => {
+    toolbar.style.opacity = null
+  }, 5000);
 }
 
 // This code loads the IFrame Player API code asynchronously.
@@ -119,17 +133,21 @@ function onPlayerStateChange(event) {
   switch (event.data) {
     case 0:
       overlay.classList.add("hidden")
+      showToolbar()
       break;
     case 1:
       addHistory()
       overlay.classList.remove("hidden")
       overlay.focus()
+      toolbar.style.opacity = null
       break;
     case 2:
       overlay.classList.add("hidden")
+      showToolbar()
       break;
     case 5:
       showPlayer()
+      showToolbar()
       break;
   
     default:
@@ -151,7 +169,11 @@ function volumeIcon() {
 }
 
 function onVolumeChange(event) {
+  console.log("vol")
+  if (volume === player.getVolume() && muted === player.isMuted()) return
+
   volume = player.getVolume()
+  muted = player.isMuted()
   localStorage.setItem(storagePrefix + "volume", volume.toString())
   updateVolumeBtn(volume)
 

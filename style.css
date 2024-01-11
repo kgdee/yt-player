@@ -78,7 +78,7 @@ body {
   /* border: 1px solid red; */
   display: flex;
   align-items: center;
-  transition: 0.25s;
+  transition: 0.2s;
   opacity: 0;
 }
 
