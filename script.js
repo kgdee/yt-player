@@ -113,6 +113,9 @@ function onPlayerStateChange(event) {
   // 5 – video cued
 
   switch (event.data) {
+    case 0:
+      overlay.classList.add("hidden")
+      break;
     case 1:
       addHistory()
       overlay.classList.remove("hidden")
@@ -420,9 +423,8 @@ function notice(content) {
 }
 
 function toggleFullscreen() {
-  var iframe = document.getElementById('player');
   if (!document.fullscreenElement) {
-    iframe.requestFullscreen().catch(err => {
+    document.body.requestFullscreen().catch(err => {
       console.error('Error attempting to enable full-screen mode:', err);
     });
   } else {
