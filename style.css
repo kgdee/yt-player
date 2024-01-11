@@ -64,7 +64,8 @@ body {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: transparent;
+  /* background-color: rgba(0, 0, 0, 0.5); */
 }
 
 .tools-container {
@@ -240,8 +241,11 @@ body {
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
+
+  font-size: 1.25rem;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
+  opacity: 0.75;
   border: 1px solid white;
   border-radius: 5px;
   padding: 10px;

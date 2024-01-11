@@ -153,7 +153,6 @@ function onVolumeChange(event) {
     <div>
       ${volumeIcon() + " " + volume}%
     </div>`)
-  console.log('vol')
 }
 function onPlaybackRateChange(event) {
   updateRateBtn(player.getPlaybackRate())
