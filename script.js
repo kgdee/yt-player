@@ -19,7 +19,7 @@ let loading = false
 let playerIsReady = false
 let currentVideoId = null
 let videoIsLocked = true
-let clipboardAccess = false
+let clipboardAllowed = false
 
 let history = JSON.parse(localStorage.getItem(storagePrefix + "history")) || []
 
@@ -117,8 +117,8 @@ function onPlayerReady(event) {
   startup()
 
   const videoId = urlParams.get('videoid')
-  if (videoId) getVideo(`https://www.youtube.com/watch?v=${videoId}`)
-  else if (clipboardAccess) getVideoFromClipboard(false)
+  if (videoId) getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
+  else if (clipboardAllowed) getVideoFromClipboard(false)
 }
 
 function onPlayerStateChange(event) {
@@ -209,9 +209,7 @@ function onPlayerError(event) {
 }
 
 
-
-
-function getVideo(url) {
+function getVideoByUrl(url) {
   if (!playerIsReady || loading) return
   loading = true
 
@@ -233,25 +231,6 @@ function getVideoIdFromUrl(url) {
   // Extract video ID from YouTube URL
   const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=))([^"&?\/\s]{11})/);
   return videoIdMatch ? videoIdMatch[1] : null;
-}
-
-async function checkClipboardPermission() {
-  try {
-    const readPermissionStatus = await navigator.permissions.query({ name: 'clipboard-read' });
-    const writePermissionStatus = await navigator.permissions.query({ name: 'clipboard-write' });
-
-    if (readPermissionStatus.state === 'granted' && writePermissionStatus.state === 'granted') {
-      // Clipboard access is granted
-
-      playBtn.classList.remove("hidden")
-      // lockBtn.classList.remove("hidden")
-      quickBtn.classList.remove("hidden")
-    } else {
-      console.log('Clipboard access is not granted');
-    }
-  } catch (error) {
-    console.error('Error checking clipboard permissions:', error);
-  }
 }
 
 async function getVideoIdFromClipboard() {
@@ -279,7 +258,7 @@ async function getVideoFromClipboard(showMsg) {
     }
 
     loading = false
-    getVideo(`https://www.youtube.com/watch?v=${videoId}`)
+    getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
   } catch (error) {
     console.error(error)
     if (showMsg) msg.textContent = `Error: ` + error
@@ -318,7 +297,7 @@ function updateHistory() {
 
     history.forEach((item) => {
       historyList.innerHTML += `
-        <button onclick="getVideo('${item.url}')" class="item">${item.title}</button>
+        <button onclick="getVideoByUrl('${item.url}')" class="item">${item.title}</button>
       `
     })
   }
@@ -480,7 +459,7 @@ document.addEventListener("keydown", function(event) {
 })
 
 document.addEventListener("visibilitychange", function() {
-  if (!clipboardAccess) return
+  if (!clipboardAllowed) return
 
   if (!videoIsLocked && !document.hidden && playerIsReady) {
     // Wait until tab has focus
@@ -492,7 +471,16 @@ document.addEventListener("visibilitychange", function() {
 });
 
 document.addEventListener("DOMContentLoaded", function() { 
-  checkClipboardPermission()
+  setTimeout(() => {
+    if (document.hasFocus()) {
+      navigator.clipboard.readText().then(()=>{
+        clipboardAllowed = true
+        playBtn.classList.remove("hidden")
+        // lockBtn.classList.remove("hidden")
+        quickBtn.classList.remove("hidden")
+      })
+    }
+  }, 1000);
   updateHistory()
   update()
 })
