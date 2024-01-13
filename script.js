@@ -431,6 +431,18 @@ function toggleFullscreen() {
   }
 }
 
+function setupClipboard() {
+  setTimeout(() => {
+    if (document.hasFocus()) {
+      navigator.clipboard.readText().then(()=>{
+        clipboardAllowed = true
+        playBtn.classList.remove("hidden")
+        // lockBtn.classList.remove("hidden")
+        quickBtn.classList.remove("hidden")
+      })
+    }
+  }, 1000);
+}
 
 
 document.addEventListener("keydown", function(event) {
@@ -459,7 +471,10 @@ document.addEventListener("keydown", function(event) {
 })
 
 document.addEventListener("visibilitychange", function() {
-  if (!clipboardAllowed) return
+  if (!clipboardAllowed) {
+    setupClipboard()
+    return
+  }
 
   if (!videoIsLocked && !document.hidden && playerIsReady) {
     // Wait until tab has focus
@@ -471,16 +486,7 @@ document.addEventListener("visibilitychange", function() {
 });
 
 document.addEventListener("DOMContentLoaded", function() { 
-  setTimeout(() => {
-    if (document.hasFocus()) {
-      navigator.clipboard.readText().then(()=>{
-        clipboardAllowed = true
-        playBtn.classList.remove("hidden")
-        // lockBtn.classList.remove("hidden")
-        quickBtn.classList.remove("hidden")
-      })
-    }
-  }, 1000);
+  setupClipboard()
   updateHistory()
   update()
 })
