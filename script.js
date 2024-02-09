@@ -464,8 +464,8 @@ document.addEventListener("keydown", function(event) {
   }
   if (event.key === "m") mute()
   // Jump backward/forward
-  if (event.key === "j" || event.key === "ArrowLeft") seek(-3)
-  if (event.key === "l" || event.key === "ArrowRight") seek(3)
+  if (event.key === "j" || event.key === "ArrowLeft") seek(-5)
+  if (event.key === "l" || event.key === "ArrowRight") seek(5)
   // Fullscreen
   if (event.key === 'f') toggleFullscreen()
 })
