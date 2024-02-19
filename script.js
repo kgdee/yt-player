@@ -493,6 +493,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
+window.addEventListener("error", (event) => {
+  const error = `${event.type}: ${event.message}`
+  console.error(error)
+  alert(error)
+})
+
 
 // document.addEventListener("keydown", function(event) {
 //   if (event.key === "d") {
