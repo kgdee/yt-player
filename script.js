@@ -12,6 +12,7 @@ const playBtn = document.querySelector(".tools .play")
 const copyBtn = document.querySelector(".tools .copy")
 const volumeBtn = document.querySelector(".tools .volume-btn")
 const rateBtn = document.querySelector(".tools .rate .rate-btn")
+const replayBtn = document.querySelector(".tools .replay")
 const stopBtn = document.querySelector(".tools .stop")
 const historyList = document.querySelector(".history .list")
 
@@ -374,6 +375,14 @@ function updateRateBtn(rate) {
     <div class="text">${rate}x</div>
     <span class="tooltip-text">Playback speed ${rate}x</span>
   `
+}
+
+replayBtn.addEventListener("click", replayVideo)
+function replayVideo() {
+  if (!currentVideoId || !playerIsReady) return
+  
+  player.seekTo(0)
+  player.playVideo()
 }
 
 stopBtn.addEventListener("click", stopVideo)
