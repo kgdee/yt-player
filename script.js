@@ -26,16 +26,15 @@ let history = JSON.parse(localStorage.getItem(storagePrefix + "history")) || []
 const queryString = window.location.search
 const urlParams = new URLSearchParams(queryString)
 
-const savedVolume = parseInt(localStorage.getItem(storagePrefix + "volume"))
-let volume = Number.isInteger(savedVolume) ? parseInt(savedVolume) : 50
-let muted = false
+let currentVolume = parseInt(localStorage.getItem(storagePrefix + "currentVolume")) || 50
+let muted = JSON.parse(localStorage.getItem(storagePrefix + "muted")) || false
 
 
 function stopPropagation(event) {
   event.stopPropagation()
 }
 
-function startup() {
+function goHome() {
   window.history.pushState(null, null, window.location.pathname)
 
   document.title = "YT Video Player"
@@ -48,9 +47,9 @@ function startup() {
   if (playerIsReady) {
     // if (videoIsLocked) lockVideo()
     player.pauseVideo()
-    player.setVolume(volume)
+    muted ? player.mute() : player.unMute()
+    player.setVolume(currentVolume)
     player.getIframe().classList.add("hidden")
-    muted = player.isMuted()
   }
 }
 
@@ -63,13 +62,13 @@ function update() {
   }, 250);
 }
 
-function showPlayer() {
+function displayPlayer() {
   urlInput.value = ""
   player.getIframe().classList.remove("hidden")
   document.title = player.getVideoData().title
   startModal.style.display = "none"
-  updateVolumeBtn(player.getVolume())
-  updateRateBtn(player.getPlaybackRate())
+  updateVolumeBtn()
+  setPlayBackRate(1)
   toolbar.classList.remove("hidden")
   showToolbar()
 
@@ -114,7 +113,7 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {  
   playerIsReady = true
-  startup()
+  goHome()
 
   const videoId = urlParams.get('videoid')
   if (videoId) getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
@@ -141,7 +140,7 @@ function onPlayerStateChange(event) {
       showToolbar()
       break;
     case 5:
-      showPlayer()
+      displayPlayer()
       showToolbar()
       break;
   
@@ -151,11 +150,10 @@ function onPlayerStateChange(event) {
 }
 
 function volumeIcon() {
-  const volume = player.getVolume()
   let icon = ""
-  if (volume <= 0 || player.isMuted()) 
+  if (currentVolume <= 0 || muted) 
     icon = `<i class="bi bi-volume-mute-fill"></i>`
-  else if (volume <= 50) 
+  else if (currentVolume <= 50) 
     icon = `<i class="bi bi-volume-down-fill"></i>`
   else 
     icon = `<i class="bi bi-volume-up-fill"></i>`
@@ -164,29 +162,17 @@ function volumeIcon() {
 }
 
 function onVolumeChange(event) {
-  if (volume === player.getVolume() && muted === player.isMuted()) return
-
-  volume = player.getVolume()
-  muted = player.isMuted()
-  localStorage.setItem(storagePrefix + "volume", volume.toString())
-  updateVolumeBtn(volume)
-
-  document.querySelector(".tools .volume .tool-modal").classList.remove("hidden")
-  notice(`
-    <div>
-      ${volumeIcon() + " " + volume}%
-    </div>`)
+  updateVolumeBtn(player.getVolume())
 }
+
 function onPlaybackRateChange(event) {
   updateRateBtn(player.getPlaybackRate())
-
-  document.querySelector(".tools .rate .tool-modal").classList.remove("hidden")
 }
 
 function onPlayerError(event) {
   console.error('An error occurred: ', event.data);
 
-  startup()
+  goHome()
   loading = false
 
   switch (event.data) {
@@ -315,9 +301,6 @@ function pauseVideo() {
 
 
 homeBtn.addEventListener("click", goHome)
-function goHome() {
-  startup()
-}
 
 lockBtn.addEventListener("click", lockVideo)
 function lockVideo() {
@@ -349,30 +332,42 @@ volumeBtn.addEventListener("click", mute)
 function mute() {
   if (!currentVideoId || !playerIsReady) return
 
-  player.isMuted() ? player.unMute() : player.mute()
+  muted = !muted
+  muted ? player.mute() : player.unMute()
+
+  updateVolumeBtn()
+  localStorage.setItem(storagePrefix + "muted", muted.toString())
 }
 
-function changeVolume(value) {
+function setVolume(volume) {
   if (!currentVideoId || !playerIsReady) return
 
-  document.querySelector(".tools .volume .tool-modal").classList.add("hidden")
-  const volume = Math.min(Math.max(value, 0), 100)
-  player.setVolume(volume)
+  currentVolume = Math.min(Math.max(volume, 0), 100)
+
+  player.setVolume(currentVolume)
+
+  localStorage.setItem(storagePrefix + "volume", currentVolume.toString())
+  updateVolumeBtn()
+
+  notice(`
+    <div>
+      ${volumeIcon() + " " + currentVolume}%
+    </div>`)
 }
 
-function updateVolumeBtn(volume) {
+function updateVolumeBtn() {
   volumeBtn.innerHTML = `
     ${volumeIcon()}
-    <span class="tooltip-text">Volume ${volume}% ${player.isMuted() ? "(Muted)" : ""}</span>
+    <span class="tooltip-text">Volume ${currentVolume}% ${muted ? "(Muted)" : ""}</span>
   `
 }
 
-function changePlayBackRate(value) {
+function setPlayBackRate(value) {
   if (!currentVideoId || !playerIsReady) return
 
   player.setPlaybackRate(value)
 
-  document.querySelector(".tools .rate .tool-modal").classList.add("hidden")
+  updateRateBtn(value)
 }
 function updateRateBtn(rate) {
   rateBtn.innerHTML = `
@@ -445,22 +440,27 @@ function setupClipboard() {
 }
 
 
+function hideToolModal(element) {
+  element.classList.add("hidden")
+
+  setTimeout(() => {
+    element.classList.remove("hidden")
+  }, 100);
+}
+
+
 document.addEventListener("keydown", function(event) {
   // Play/Pause
   if (event.key === " " || event.key === "k") pauseVideo()
   // Volume
   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-    if (!currentVideoId || !playerIsReady) return
     let amount = 5
-    const playerVol = player.getVolume()
     if (event.key === "ArrowUp") {
-      amount = playerVol < 5 ? 1 : 5
+      amount = currentVolume < 5 ? 1 : 5
     } else {
-      amount = playerVol <= 5 ? -1 : -5
+      amount = currentVolume <= 5 ? -1 : -5
     }
-    
-    const totalVolume = Math.min(Math.max((playerVol + amount), 0), 100)
-    player.setVolume(totalVolume)
+    setVolume(currentVolume + amount)
   }
   if (event.key === "m") mute()
   // Jump backward/forward

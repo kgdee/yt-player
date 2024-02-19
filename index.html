@@ -58,11 +58,11 @@
           <i class="bi bi-volume-up-fill"></i>
           <span class="tooltip-text">Volume 25%</span>
         </button>
-        <div class="tool-modal">
+        <div class="tool-modal" onclick="hideToolModal(this)">
           <div class="modal-content">
-            <button onclick="changeVolume(25)">25%</button>
-            <button onclick="changeVolume(50)">50%</button>
-            <button onclick="changeVolume(75)">75%</button>
+            <button onclick="setVolume(25)">25%</button>
+            <button onclick="setVolume(50)">50%</button>
+            <button onclick="setVolume(75)">75%</button>
           </div>
         </div>
       </div>
@@ -72,11 +72,11 @@
           <div class="text">1.5x</div>
           <span class="tooltip-text">Playback speed 1.5</span>
         </button>
-        <div class="tool-modal">
+        <div class="tool-modal" onclick="hideToolModal(this)">
           <div class="modal-content">
-            <button onclick="changePlayBackRate(0.75)">0.75x</button>
-            <button onclick="changePlayBackRate(1)">1x</button>
-            <button onclick="changePlayBackRate(1.25)">1.25x</button>
+            <button onclick="setPlayBackRate(0.75)">0.75x</button>
+            <button onclick="setPlayBackRate(1)">1x</button>
+            <button onclick="setPlayBackRate(1.25)">1.25x</button>
           </div>
         </div>
       </div>
