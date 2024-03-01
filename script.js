@@ -477,6 +477,11 @@ document.addEventListener("keydown", function(event) {
   if (event.key === "l" || event.key === "ArrowRight") seek(5)
   // Fullscreen
   if (event.key === 'f') toggleFullscreen()
+  // Hide cursor
+  if(event.key === "h") {
+    document.querySelector(".overlay").classList.toggle("hidden")
+    toolbar.style.opacity = null
+  }
 })
 
 document.addEventListener("visibilitychange", function() {
