@@ -9,11 +9,11 @@ const toolbar = document.querySelector(".tools-container")
 const homeBtn = document.querySelector(".tools .home")
 const lockBtn = document.querySelector(".tools .lock")
 const playBtn = document.querySelector(".tools .play")
-const copyBtn = document.querySelector(".tools .copy")
 const volumeBtn = document.querySelector(".tools .volume-btn")
 const rateBtn = document.querySelector(".tools .rate .rate-btn")
 const replayBtn = document.querySelector(".tools .replay")
 const stopBtn = document.querySelector(".tools .stop")
+const resizeBtn = document.querySelector(".tools .resize")
 const historyList = document.querySelector(".history .list")
 
 let loading = false
@@ -29,7 +29,7 @@ const urlParams = new URLSearchParams(queryString)
 
 let currentVolume = parseInt(localStorage.getItem(storagePrefix + "currentVolume")) || 50
 let muted = JSON.parse(localStorage.getItem(storagePrefix + "muted")) || false
-
+let currentWidth = parseInt(localStorage.getItem(storagePrefix + "currentWidth")) || 100
 
 function stopPropagation(event) {
   event.stopPropagation()
@@ -317,17 +317,6 @@ function lockVideo() {
 
 playBtn.addEventListener("click", ()=>getVideoFromClipboard(true))
 
-copyBtn.addEventListener("click", copyTitle)
-async function copyTitle() {
-  if (!currentVideoId || !playerIsReady) return
-
-  try {
-    await navigator.clipboard.writeText(player.getVideoData().title)
-  } catch (error) {
-    console.error(error)
-  } 
-}
-
 
 volumeBtn.addEventListener("click", mute)
 function mute() {
@@ -391,6 +380,18 @@ function stopVideo() {
   
   player.stopVideo()
 }
+
+resizeBtn.addEventListener("click", resizePlayer)
+function resizePlayer() {
+
+  currentWidth -= 10
+  if (currentWidth < 50) currentWidth = 100
+  
+  localStorage.setItem(storagePrefix + "currentWidth", currentWidth)
+
+  document.getElementById("player").style.width = `${currentWidth}%`
+}
+
 
 function seek(amount) {
   if (!currentVideoId || !playerIsReady) return
@@ -477,11 +478,6 @@ document.addEventListener("keydown", function(event) {
   if (event.key === "l" || event.key === "ArrowRight") seek(5)
   // Fullscreen
   if (event.key === 'f') toggleFullscreen()
-  // Hide cursor
-  if(event.key === "h") {
-    document.querySelector(".overlay").classList.toggle("hidden")
-    toolbar.style.opacity = null
-  }
 })
 
 document.addEventListener("visibilitychange", function() {
@@ -500,6 +496,7 @@ document.addEventListener("visibilitychange", function() {
 });
 
 document.addEventListener("DOMContentLoaded", function() { 
+  document.getElementById("player").style.width = `${currentWidth}%`
   setupClipboard()
   updateHistory()
   update()

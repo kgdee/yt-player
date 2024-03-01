@@ -12,88 +12,90 @@
   <script src="script.js" defer></script>
 </head>
 <body>
-  <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
-  <div id="player"></div>
+  <div class="app container">
+    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+    <div id="player"></div>
 
-  <div class="overlay hidden hidden-cursor"></div>
+    <div class="overlay hidden hidden-cursor"></div>
 
-  <div class="start-modal">
-    <div class="modal-content">
-      <h1><i class="bi bi-play-fill"></i>YT VIDEO PLAYER</h1>
-      <input class="url-input" type="text" placeholder="Paste Video URL..." oninput="getVideoByUrl(this.value)" autofocus>
-      <button class="quick-btn hidden" onclick="getVideoFromClipboard(true)">Or check my clipboard!</button>
-      <p class="msg"></p>
-  
-      <div class="history">
-        <h1>History</h1>
-        <div class="list"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="tools-container hidden" onclick="pauseVideo()">
-    <div class="tools" onclick="stopPropagation(event)">
-      <button class="tool home tooltip">
-        <i class="bi bi-house-door-fill"></i>
-        <span class="tooltip-text">Home</span>
-      </button>
-  
-      <button class="tool lock tooltip hidden">
-        <i class="bi bi-lock-fill"></i>
-        <span class="tooltip-text">Unlock</span>
-      </button>
-
-      <button class="tool play tooltip hidden">
-        <i class="bi bi-play-fill"></i>
-        <span class="tooltip-text">Play next</span>
-      </button>
-  
-      <button class="tool copy tooltip">
-        <i class="bi bi-clipboard-fill"></i>
-        <span class="tooltip-text">Copy title</span>
-      </button>
-
-      <div class="tool-group volume">
-        <button class="tool volume-btn tooltip">
-          <i class="bi bi-volume-up-fill"></i>
-          <span class="tooltip-text">Volume 25%</span>
-        </button>
-        <div class="tool-modal" onclick="hideToolModal(this)">
-          <div class="modal-content">
-            <button onclick="setVolume(25)">25%</button>
-            <button onclick="setVolume(50)">50%</button>
-            <button onclick="setVolume(75)">75%</button>
-          </div>
+    <div class="start-modal">
+      <div class="modal-content">
+        <h1><i class="bi bi-play-fill"></i>YT VIDEO PLAYER</h1>
+        <input class="url-input" type="text" placeholder="Paste Video URL..." oninput="getVideoByUrl(this.value)" autofocus>
+        <button class="quick-btn hidden" onclick="getVideoFromClipboard(true)">Or check my clipboard!</button>
+        <p class="msg"></p>
+    
+        <div class="history">
+          <h1>History</h1>
+          <div class="list"></div>
         </div>
       </div>
+    </div>
 
-      <div class="tool-group rate">
-        <button class="tool rate-btn tooltip">
-          <div class="text">1.5x</div>
-          <span class="tooltip-text">Playback speed 1.5</span>
+    <div class="tools-container hidden" onclick="pauseVideo()">
+      <div class="tools" onclick="stopPropagation(event)">
+        <button class="tool home tooltip">
+          <i class="bi bi-house-door-fill"></i>
+          <span class="tooltip-text">Home</span>
         </button>
-        <div class="tool-modal" onclick="hideToolModal(this)">
-          <div class="modal-content">
-            <button onclick="setPlayBackRate(0.75)">0.75x</button>
-            <button onclick="setPlayBackRate(1)">1x</button>
-            <button onclick="setPlayBackRate(1.25)">1.25x</button>
+    
+        <button class="tool lock tooltip hidden">
+          <i class="bi bi-lock-fill"></i>
+          <span class="tooltip-text">Unlock</span>
+        </button>
+
+        <button class="tool play tooltip hidden">
+          <i class="bi bi-play-fill"></i>
+          <span class="tooltip-text">Play next</span>
+        </button>
+
+        <div class="tool-group volume">
+          <button class="tool volume-btn tooltip">
+            <i class="bi bi-volume-up-fill"></i>
+            <span class="tooltip-text">Volume 25%</span>
+          </button>
+          <div class="tool-modal" onclick="hideToolModal(this)">
+            <div class="modal-content">
+              <button onclick="setVolume(25)">25%</button>
+              <button onclick="setVolume(50)">50%</button>
+              <button onclick="setVolume(75)">75%</button>
+            </div>
           </div>
         </div>
+
+        <div class="tool-group rate">
+          <button class="tool rate-btn tooltip">
+            <div class="text">1.5x</div>
+            <span class="tooltip-text">Playback speed 1.5</span>
+          </button>
+          <div class="tool-modal" onclick="hideToolModal(this)">
+            <div class="modal-content">
+              <button onclick="setPlayBackRate(0.75)">0.75x</button>
+              <button onclick="setPlayBackRate(1)">1x</button>
+              <button onclick="setPlayBackRate(1.25)">1.25x</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="tool replay tooltip">
+          <i class="bi bi-arrow-counterclockwise"></i>
+          <span class="tooltip-text">Replay</span>
+        </button>
+
+        <button class="tool stop tooltip">
+          <i class="bi bi-stop-fill"></i>
+          <span class="tooltip-text">Stop</span>
+        </button>
+
+        <button class="tool resize tooltip">
+          <i class="bi bi-aspect-ratio"></i>
+          <span class="tooltip-text">Resize</span>
+        </button>
       </div>
-
-      <button class="tool replay tooltip">
-        <i class="bi bi-arrow-counterclockwise"></i>
-        <span class="tooltip-text">Replay</span>
-      </button>
-
-      <button class="tool stop tooltip">
-        <i class="bi bi-stop-fill"></i>
-        <span class="tooltip-text">Stop</span>
-      </button>
     </div>
-  </div>
 
-  <div class="noticebox hidden"></div>
-  <button id="focusBtn" style="position: absolute; left: 0; top: 0; transform: translateY(-100%);"></button>
+    <div class="noticebox hidden"></div>
+    <button id="focusBtn" style="position: absolute; left: 0; top: 0; transform: translateY(-100%);"></button>
+  </div>
 </body>
 </html>
