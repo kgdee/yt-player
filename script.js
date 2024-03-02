@@ -336,7 +336,7 @@ function setVolume(volume) {
 
   player.setVolume(currentVolume)
 
-  localStorage.setItem(storagePrefix + "volume", currentVolume.toString())
+  localStorage.setItem(storagePrefix + "currentVolume", currentVolume.toString())
   updateVolumeBtn()
 
   notice(`
