@@ -70,6 +70,7 @@ function displayPlayer() {
   startModal.style.display = "none"
   updateVolumeBtn()
   setPlayBackRate(1)
+  updateResizeBtn()
   toolbar.classList.remove("hidden")
   showToolbar()
 
@@ -390,6 +391,14 @@ function resizePlayer() {
   localStorage.setItem(storagePrefix + "currentWidth", currentWidth)
 
   document.getElementById("player").style.width = `${currentWidth}%`
+
+  updateResizeBtn()
+}
+function updateResizeBtn() {
+  resizeBtn.innerHTML = `
+    <i class="bi bi-aspect-ratio"></i>
+    <span class="tooltip-text">Size ${currentWidth}%</span>
+  `
 }
 
 
