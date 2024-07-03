@@ -45,13 +45,7 @@ function goHome() {
   toolbar.classList.add("hidden")
   currentVideoId = null
   
-  if (playerIsReady) {
-    // if (videoIsLocked) lockVideo()
-    player.pauseVideo()
-    muted ? player.mute() : player.unMute()
-    player.setVolume(currentVolume)
-    player.getIframe().classList.add("hidden")
-  }
+  if (playerIsReady) player.pauseVideo()
 }
 
 const focusBtn = document.getElementById("focusBtn")
@@ -115,8 +109,12 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {  
   playerIsReady = true
-  goHome()
 
+  // if (videoIsLocked) lockVideo()
+  muted ? player.mute() : player.unMute()
+  player.setVolume(currentVolume)
+  player.getIframe().classList.add("hidden")
+  
   const videoId = urlParams.get('videoid')
   if (videoId) getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
   else if (clipboardAllowed) getVideoFromClipboard(false)
