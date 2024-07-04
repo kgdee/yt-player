@@ -130,15 +130,12 @@ function onPlayerStateChange(event) {
 
   switch (event.data) {
     case 0:
-      addHistory()
       showToolbar()
       break;
     case 1:
-      addHistory()
       toolbar.style.opacity = null
       break;
     case 2:
-      addHistory()
       showToolbar()
       break;
     case 5:
@@ -207,8 +204,6 @@ function getVideoByUrl(url) {
   if (videoId) {
     window.history.pushState(null, null, `?videoid=${videoId}`)
 
-    if (currentVideoId) addHistory()
-
     player.cueVideoById(videoId, videoDetails.startSeconds)
     currentVideoId = videoId
   } else {  
@@ -274,6 +269,14 @@ async function getVideoFromClipboard() {
 }
 
 function addHistory() {
+  
+  setTimeout(() => {
+    addHistory()
+  }, 10000);
+
+  if (!currentVideoId) return
+
+
   const videoUrl = player.getVideoUrl() + "?t=" + player.getCurrentTime()
   const videoDetails = getVideoDetailsFromUrl(videoUrl)
   
@@ -530,6 +533,7 @@ document.addEventListener("DOMContentLoaded", function() {
   setupClipboard()
   updateHistory()
   update()
+  addHistory()
 })
 
 
