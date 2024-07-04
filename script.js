@@ -117,7 +117,7 @@ function onPlayerReady(event) {
   
   const videoId = urlParams.get('videoid')
   if (videoId) getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
-  else if (clipboardAllowed) getVideoFromClipboard(false)
+  else if (clipboardAllowed) getVideoFromClipboard()
 }
 
 function onPlayerStateChange(event) {
@@ -130,6 +130,7 @@ function onPlayerStateChange(event) {
 
   switch (event.data) {
     case 0:
+      addHistory()
       showToolbar()
       break;
     case 1:
@@ -137,6 +138,7 @@ function onPlayerStateChange(event) {
       toolbar.style.opacity = null
       break;
     case 2:
+      addHistory()
       showToolbar()
       break;
     case 5:
@@ -199,12 +201,15 @@ function getVideoByUrl(url) {
   if (!playerIsReady || loading) return
   loading = true
 
-  const videoId = getVideoIdFromUrl(url)
+  const videoDetails = getVideoDetailsFromUrl(url)
+  const videoId = videoDetails.videoId
   
   if (videoId) {
     window.history.pushState(null, null, `?videoid=${videoId}`)
 
-    player.cueVideoById(videoId)
+    if (currentVideoId) addHistory()
+
+    player.cueVideoById(videoId, videoDetails.startSeconds)
     currentVideoId = videoId
   } else {  
     urlInput.value = ""
@@ -213,58 +218,76 @@ function getVideoByUrl(url) {
   }
 }
 
-function getVideoIdFromUrl(url) {
+// function getVideoIdFromUrl(url) {
+//   // Extract video ID from YouTube URL
+//   const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|live\/|.*[?&]v=))([^"&?\/\s]{11})/);
+//   return videoIdMatch ? videoIdMatch[1] : null;
+// }
+
+function getVideoDetailsFromUrl(url) {
   // Extract video ID from YouTube URL
-  const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|.*[?&]v=))([^"&?\/\s]{11})/);
-  return videoIdMatch ? videoIdMatch[1] : null;
+  const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|live\/|.*[?&]v=))([^"&?\/\s]{11})/);
+  const videoId = videoIdMatch ? videoIdMatch[1] : null;
+  
+  // Extract start seconds from YouTube URL
+  const startSecondsMatch = url.match(/[?&]t=(\d+)/);
+  const startSeconds = startSecondsMatch ? parseInt(startSecondsMatch[1]) : 0;
+  
+  return {
+    videoId: videoId,
+    startSeconds: startSeconds
+  };
 }
 
-async function getVideoIdFromClipboard() {
+async function getVideoDetailsFromClipboard() {
   if (!document.hasFocus()) return null
-  const clipboardText = await navigator.clipboard.readText();
-  if (!clipboardText) return null
-  const videoId = getVideoIdFromUrl(clipboardText)
-  if (!videoId) return null
-  return videoId 
-}
 
-async function getVideoFromClipboard(showMsg) {
   if (loading) return
   loading = true
+
   try {
-    const videoId = await getVideoIdFromClipboard()
-    
-    if (!videoId) {
-      if (showMsg) msg.textContent = `Error: Invalid URL!`
-      loading = false
-      return
-    } else if (videoId === currentVideoId) {
-      loading = false
-      return
+    let videoDetails = {
+      videoId: null,
+      startSeconds: 0
     }
 
+    const clipboardText = await navigator.clipboard.readText();
+
     loading = false
-    getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
+
+    if (!clipboardText) return videoDetails
+
+    videoDetails = getVideoDetailsFromUrl(clipboardText)
+
+    return videoDetails 
+
   } catch (error) {
     console.error(error)
-    if (showMsg) msg.textContent = `Error: ` + error
     loading = false
   }
 }
 
+async function getVideoFromClipboard() {
+  const videoDetails = await getVideoDetailsFromClipboard()
+
+  getVideoByUrl(`https://www.youtube.com/watch?v=${videoDetails.videoId}?t=${videoDetails.startSeconds}`)
+}
+
 function addHistory() {
-  const videoUrl = player.getVideoUrl()
-  const videoId = getVideoIdFromUrl(videoUrl)
+  const videoUrl = player.getVideoUrl() + "?t=" + player.getCurrentTime()
+  const videoDetails = getVideoDetailsFromUrl(videoUrl)
   
-  const historyExist = history.some((item) => item.id === videoId)
+  const historyExist = history.some((item) => item.id === videoDetails.videoId)
 
   if (!historyExist) {
-    const newHistoryItem = { title: player.getVideoData().title, url: videoUrl, id: videoId }
+    const newHistoryItem = { title: player.getVideoData().title, id: videoDetails.videoId, startSeconds: videoDetails.startSeconds }
 
     history.unshift(newHistoryItem)
     if (history.length > 3) history.pop()
   } else {
-    const historyItem = history.find((item) => item.id === videoId)
+    const historyItem = history.find((item) => item.id === videoDetails.videoId)
+
+    historyItem.startSeconds = videoDetails.startSeconds
 
     history.splice(history.indexOf(historyItem), 1)
     
@@ -283,7 +306,7 @@ function updateHistory() {
 
     history.forEach((item) => {
       historyList.innerHTML += `
-        <button onclick="getVideoByUrl('${item.url}')" class="item">${item.title}</button>
+        <button onclick="getVideoByUrl('https://www.youtube.com/watch?v=${item.id}?t=${item.startSeconds}')" class="item">${item.title}</button>
       `
     })
   }
@@ -314,7 +337,7 @@ function lockVideo() {
   : `<i class="bi bi-unlock-fill"></i><span class="tooltip-text">Lock</span>`
 }
 
-playBtn.addEventListener("click", ()=>getVideoFromClipboard(true))
+playBtn.addEventListener("click", ()=>getVideoFromClipboard())
 
 
 volumeBtn.addEventListener("click", mute)
@@ -496,7 +519,7 @@ document.addEventListener("visibilitychange", function() {
   if (!videoIsLocked && !document.hidden && playerIsReady) {
     // Wait until tab has focus
     setTimeout(() => {
-      getVideoFromClipboard(false)
+      getVideoFromClipboard()
     }, 1000);
   }
 
