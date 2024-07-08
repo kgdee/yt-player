@@ -133,6 +133,7 @@ function onPlayerStateChange(event) {
       showToolbar()
       break;
     case 1:
+      addHistory()
       toolbar.style.opacity = null
       break;
     case 2:
@@ -269,28 +270,18 @@ async function getVideoFromClipboard() {
 }
 
 function addHistory() {
-  
-  setTimeout(() => {
-    addHistory()
-  }, 10000);
 
   if (!currentVideoId) return
-
-
-  const videoUrl = player.getVideoUrl() + "?t=" + player.getCurrentTime()
-  const videoDetails = getVideoDetailsFromUrl(videoUrl)
   
-  const historyExist = history.some((item) => item.id === videoDetails.videoId)
+  const historyExist = history.some((item) => item.id === currentVideoId)
 
   if (!historyExist) {
-    const newHistoryItem = { title: player.getVideoData().title, id: videoDetails.videoId, startSeconds: videoDetails.startSeconds }
+    const newHistoryItem = { title: player.getVideoData().title, id: currentVideoId }
 
     history.unshift(newHistoryItem)
     if (history.length > 3) history.pop()
   } else {
-    const historyItem = history.find((item) => item.id === videoDetails.videoId)
-
-    historyItem.startSeconds = videoDetails.startSeconds
+    const historyItem = history.find((item) => item.id === currentVideoId)
 
     history.splice(history.indexOf(historyItem), 1)
     
@@ -309,7 +300,7 @@ function updateHistory() {
 
     history.forEach((item) => {
       historyList.innerHTML += `
-        <button onclick="getVideoByUrl('https://www.youtube.com/watch?v=${item.id}?t=${item.startSeconds}')" class="item">${item.title}</button>
+        <button onclick="getVideoByUrl('https://www.youtube.com/watch?v=${item.id}')" class="item">${item.title}</button>
       `
     })
   }
@@ -533,7 +524,6 @@ document.addEventListener("DOMContentLoaded", function() {
   setupClipboard()
   updateHistory()
   update()
-  addHistory()
 })
 
 
