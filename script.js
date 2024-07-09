@@ -203,9 +203,15 @@ function getVideoByUrl(url) {
   const { videoId, startSeconds } = videoDetails
   
   if (videoId) {
-    if (videoId === currentVideoId && Math.abs(startSeconds - player.getCurrentTime()) <= 5) {
-      loading = false
-      return
+    if (videoId === currentVideoId) {
+      if (!startSeconds || Math.abs(startSeconds - player.getCurrentTime()) <= 5) {
+        loading = false
+        return
+      } else {
+        player.seekTo(startSeconds)
+        loading = false
+        return
+      }
     }
 
     window.history.pushState(null, null, `?videoid=${videoId}`)
@@ -232,7 +238,7 @@ function getVideoDetailsFromUrl(url) {
   
   // Extract start seconds from YouTube URL
   const startSecondsMatch = url.match(/[?&]t=(\d+)/);
-  const startSeconds = startSecondsMatch ? parseInt(startSecondsMatch[1]) : 0;
+  const startSeconds = startSecondsMatch ? parseInt(startSecondsMatch[1]) : null
   
   return {
     videoId: videoId,
@@ -254,9 +260,7 @@ async function getVideoFromClipboard() {
 
     if (!clipboardText) return
 
-    const videoDetails = getVideoDetailsFromUrl(clipboardText)
-
-    getVideoByUrl(`https://www.youtube.com/watch?v=${videoDetails.videoId}?t=${videoDetails.startSeconds}`)
+    getVideoByUrl(clipboardText)
 
   } catch (error) {
     console.error(error)
