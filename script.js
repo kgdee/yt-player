@@ -204,7 +204,7 @@ function getVideoByUrl(url) {
   
   if (videoId) {
     if (videoId === currentVideoId) {
-      if (!startSeconds || Math.abs(startSeconds - player.getCurrentTime()) <= 5) {
+      if (!startSeconds || startSeconds === player.getCurrentTime()) {
         loading = false
         return
       } else {
