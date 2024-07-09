@@ -200,12 +200,17 @@ function getVideoByUrl(url) {
   loading = true
 
   const videoDetails = getVideoDetailsFromUrl(url)
-  const videoId = videoDetails.videoId
+  const { videoId, startSeconds } = videoDetails
   
   if (videoId) {
+    if (videoId === currentVideoId && Math.abs(startSeconds - player.getCurrentTime()) <= 5) {
+      loading = false
+      return
+    }
+
     window.history.pushState(null, null, `?videoid=${videoId}`)
 
-    player.cueVideoById(videoId, videoDetails.startSeconds)
+    player.cueVideoById(videoId, startSeconds)
     currentVideoId = videoId
   } else {  
     urlInput.value = ""
@@ -235,38 +240,28 @@ function getVideoDetailsFromUrl(url) {
   };
 }
 
-async function getVideoDetailsFromClipboard() {
-  if (!document.hasFocus()) return null
+async function getVideoFromClipboard() {
+
+  if (!document.hasFocus()) return
 
   if (loading) return
   loading = true
 
   try {
-    let videoDetails = {
-      videoId: null,
-      startSeconds: 0
-    }
-
     const clipboardText = await navigator.clipboard.readText();
 
     loading = false
 
-    if (!clipboardText) return videoDetails
+    if (!clipboardText) return
 
-    videoDetails = getVideoDetailsFromUrl(clipboardText)
+    const videoDetails = getVideoDetailsFromUrl(clipboardText)
 
-    return videoDetails 
+    getVideoByUrl(`https://www.youtube.com/watch?v=${videoDetails.videoId}?t=${videoDetails.startSeconds}`)
 
   } catch (error) {
     console.error(error)
     loading = false
   }
-}
-
-async function getVideoFromClipboard() {
-  const videoDetails = await getVideoDetailsFromClipboard()
-
-  getVideoByUrl(`https://www.youtube.com/watch?v=${videoDetails.videoId}?t=${videoDetails.startSeconds}`)
 }
 
 function addHistory() {
