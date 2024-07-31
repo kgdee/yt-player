@@ -484,23 +484,23 @@ function hideToolModal(element) {
 
 document.addEventListener("keydown", function(event) {
   // Play/Pause
-  if (event.key === " " || event.key === "k") pauseVideo()
+  if (event.code === "Space" || event.code === "KeyK") pauseVideo()
   // Volume
-  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+  if (event.code === "ArrowUp" || event.code === "ArrowDown" || event.code === 'KeyW' || event.code === 'KeyS') {
     let amount = 5
-    if (event.key === "ArrowUp") {
+    if (event.code === "ArrowUp" || event.code === 'KeyW') {
       amount = currentVolume < 5 ? 1 : 5
     } else {
       amount = currentVolume <= 5 ? -1 : -5
     }
     setVolume(currentVolume + amount)
   }
-  if (event.key === "m") mute()
+  if (event.code === "KeyM") mute()
   // Jump backward/forward
-  if (event.key === "j" || event.key === "ArrowLeft") seek(-5)
-  if (event.key === "l" || event.key === "ArrowRight") seek(5)
+  if (event.code === 'KeyJ' || event.code === "ArrowLeft" || event.code === 'KeyA') seek(-5)
+  if (event.code === 'KeyL' || event.code === "ArrowRight" || event.code === 'KeyD') seek(5)
   // Fullscreen
-  if (event.key === 'f') toggleFullscreen()
+  if (event.code === 'KeyF') toggleFullscreen()
 })
 
 document.addEventListener("visibilitychange", function() {
