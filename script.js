@@ -1,6 +1,8 @@
 
 const storagePrefix = 'yt-player_'
 
+const apiKey = 'AIzaSyDHsxG3eksISM7f3qR_kXqYhrXq-vs0lL4'
+
 const startModal = document.querySelector(".start-modal")
 const urlInput = document.querySelector(".url-input")
 const msg = document.querySelector(".msg")
@@ -14,11 +16,13 @@ const rateBtn = document.querySelector(".tools .rate .rate-btn")
 const replayBtn = document.querySelector(".tools .replay")
 const stopBtn = document.querySelector(".tools .stop")
 const resizeBtn = document.querySelector(".tools .resize")
+const copyTitleBtn = document.querySelector(".tools .copy-title")
 const historyList = document.querySelector(".history .list")
+
+let currentVideo = null
 
 let loading = false
 let playerIsReady = false
-let currentVideoId = null
 let videoIsLocked = true
 let clipboardAllowed = false
 
@@ -43,14 +47,14 @@ function goHome() {
   msg.innerHTML = ""
   startModal.style.display = "block"
   toolbar.classList.add("hidden")
-  currentVideoId = null
+  currentVideo = null
   
   if (playerIsReady) player.pauseVideo()
 }
 
 const focusBtn = document.getElementById("focusBtn")
 function update() {
-  if (currentVideoId && playerIsReady) focusBtn.focus()
+  if (currentVideo?.id && playerIsReady) focusBtn.focus()
   
   setTimeout(() => {
     update()
@@ -60,7 +64,7 @@ function update() {
 function displayPlayer() {
   urlInput.value = ""
   player.getIframe().classList.remove("hidden")
-  document.title = player.getVideoData().title
+  document.title = currentVideo.title
   startModal.style.display = "none"
   updateVolumeBtn()
   setPlayBackRate(1)
@@ -116,7 +120,7 @@ function onPlayerReady(event) {
   player.getIframe().classList.add("hidden")
   
   const videoId = urlParams.get('videoid')
-  if (videoId) getVideoByUrl(`https://www.youtube.com/watch?v=${videoId}`)
+  if (videoId) serveVideo(`https://www.youtube.com/watch?v=${videoId}`)
   else if (clipboardAllowed) getVideoFromClipboard()
 }
 
@@ -139,11 +143,7 @@ function onPlayerStateChange(event) {
     case 2:
       showToolbar()
       break;
-    case 5:
-      displayPlayer()
-      showToolbar()
-      break;
-  
+
     default:
       break;
   }
@@ -195,7 +195,7 @@ function onPlayerError(event) {
 }
 
 
-function getVideoByUrl(url) {
+async function serveVideo(url) {
   if (!playerIsReady || loading) return
   loading = true
 
@@ -203,7 +203,7 @@ function getVideoByUrl(url) {
   const { videoId, startSeconds } = videoDetails
   
   if (videoId) {
-    if (videoId === currentVideoId) {
+    if (videoId === currentVideo?.id) {
       if (!startSeconds || startSeconds === player.getCurrentTime()) {
         loading = false
         return
@@ -217,7 +217,10 @@ function getVideoByUrl(url) {
     window.history.pushState(null, null, `?videoid=${videoId}`)
 
     player.cueVideoById(videoId, startSeconds)
-    currentVideoId = videoId
+    currentVideo = await getVideoDetails(videoId)
+
+    displayPlayer()
+    showToolbar()
   } else {  
     urlInput.value = ""
     msg.textContent = "Error: Invalid URL!"
@@ -260,7 +263,7 @@ async function getVideoFromClipboard() {
 
     if (!clipboardText) return
 
-    getVideoByUrl(clipboardText)
+    serveVideo(clipboardText)
 
   } catch (error) {
     console.error(error)
@@ -270,17 +273,17 @@ async function getVideoFromClipboard() {
 
 function addHistory() {
 
-  if (!currentVideoId) return
+  if (!currentVideo?.id) return
   
-  const historyExist = history.some((item) => item.id === currentVideoId)
+  const historyExist = history.some((item) => item.id === currentVideo?.id)
 
   if (!historyExist) {
-    const newHistoryItem = { title: player.getVideoData().title, id: currentVideoId }
+    const newHistoryItem = { title: currentVideo.title, id: currentVideo?.id }
 
     history.unshift(newHistoryItem)
     if (history.length > 3) history.pop()
   } else {
-    const historyItem = history.find((item) => item.id === currentVideoId)
+    const historyItem = history.find((item) => item.id === currentVideo?.id)
 
     history.splice(history.indexOf(historyItem), 1)
     
@@ -299,7 +302,7 @@ function updateHistory() {
 
     history.forEach((item) => {
       historyList.innerHTML += `
-        <button onclick="getVideoByUrl('https://www.youtube.com/watch?v=${item.id}')" class="item">${item.title}</button>
+        <button onclick="serveVideo('https://www.youtube.com/watch?v=${item.id}')" class="item">${item.title}</button>
       `
     })
   }
@@ -308,7 +311,7 @@ function updateHistory() {
 
 
 function pauseVideo() {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
   
   const playing = player.getPlayerState() === YT.PlayerState.PLAYING
   playing ? player.pauseVideo() : player.playVideo()
@@ -320,7 +323,7 @@ homeBtn.addEventListener("click", goHome)
 
 lockBtn.addEventListener("click", lockVideo)
 function lockVideo() {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
 
   videoIsLocked = !videoIsLocked
 
@@ -335,7 +338,7 @@ playBtn.addEventListener("click", ()=>getVideoFromClipboard())
 
 volumeBtn.addEventListener("click", mute)
 function mute() {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
 
   muted = !muted
   muted ? player.mute() : player.unMute()
@@ -345,7 +348,7 @@ function mute() {
 }
 
 function setVolume(volume) {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
 
   currentVolume = Math.min(Math.max(volume, 0), 100)
 
@@ -368,7 +371,7 @@ function updateVolumeBtn() {
 }
 
 function setPlayBackRate(value) {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
 
   player.setPlaybackRate(value)
 
@@ -383,7 +386,7 @@ function updateRateBtn(rate) {
 
 replayBtn.addEventListener("click", replayVideo)
 function replayVideo() {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
   
   player.seekTo(0)
   player.playVideo()
@@ -391,7 +394,7 @@ function replayVideo() {
 
 stopBtn.addEventListener("click", stopVideo)
 function stopVideo() {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
   
   player.stopVideo()
 }
@@ -415,9 +418,21 @@ function updateResizeBtn() {
   `
 }
 
+copyTitleBtn.addEventListener("click", copyTitle)
+async function copyTitle() {
+  try {
+    const title = currentVideo.title
+    await navigator.clipboard.writeText(title)
+    console.log('Video title copied to clipboard:', title)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+
 
 function seek(amount) {
-  if (!currentVideoId || !playerIsReady) return
+  if (!currentVideo?.id || !playerIsReady) return
 
   player.seekTo(player.getCurrentTime() + amount)
 
@@ -481,14 +496,31 @@ function hideToolModal(element) {
   }, 100);
 }
 
+async function getVideoDetails(videoId) {
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+
+  try {
+    const response = await fetch(url)
+    const data = await response.json()
+
+    const videoDetails = { id: data.items[0].id, ...data.items[0]?.snippet }
+    // console.log(videoDetails)
+    return videoDetails
+  } catch (error) {
+    console.error(error)
+    return null
+  }
+}
+
+
 
 document.addEventListener("keydown", function(event) {
   // Play/Pause
   if (event.code === "Space" || event.code === "KeyK") pauseVideo()
   // Volume
-  if (event.code === "ArrowUp" || event.code === "ArrowDown" || event.code === 'KeyW' || event.code === 'KeyS') {
+  if (event.code === "ArrowUp" || event.code === "ArrowDown" || event.code === 'KeyW' || event.code === 'KeyS' || event.code === "KeyI" || event.code === "KeyU") {
     let amount = 5
-    if (event.code === "ArrowUp" || event.code === 'KeyW') {
+    if (event.code === "ArrowUp" || event.code === 'KeyW' || event.code === "KeyI") {
       amount = currentVolume < 5 ? 1 : 5
     } else {
       amount = currentVolume <= 5 ? -1 : -5
@@ -537,6 +569,6 @@ window.addEventListener("error", (event) => {
 // document.addEventListener("keydown", function(event) {
 //   if (event.key === "d") {
 //     console.log("loading: ", loading)
-//     console.log("currentVideoId: ", currentVideoId)
+//     console.log("currentVideo?.id: ", currentVideo?.id)
 //   }
 // })

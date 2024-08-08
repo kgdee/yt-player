@@ -87,10 +87,27 @@
           <span class="tooltip-text">Stop</span>
         </button>
 
-        <button class="tool resize tooltip">
-          <i class="bi bi-aspect-ratio"></i>
-          <span class="tooltip-text">Resize</span>
-        </button>
+        <div class="tool-group other">
+          <button class="tool other-btn tooltip">
+            <i class="bi bi-three-dots"></i>
+            <span class="tooltip-text">Other</span>
+          </button>
+          <div class="tool-modal" onclick="hideToolModal(this)">
+            <div class="modal-content">
+
+              <button class="tool resize tooltip">
+                <i class="bi bi-aspect-ratio"></i>
+                <span class="tooltip-text">Resize</span>
+              </button>
+              
+              <button class="tool copy-title tooltip">
+                <i class="bi bi-clipboard"></i>
+                <span class="tooltip-text">Copy title</span>
+              </button>
+
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
