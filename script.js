@@ -25,6 +25,7 @@ let loading = false
 let playerIsReady = false
 let videoIsLocked = true
 let clipboardAllowed = false
+let played = false
 
 let history = JSON.parse(localStorage.getItem(storagePrefix + "history")) || []
 
@@ -137,13 +138,18 @@ function onPlayerStateChange(event) {
       showToolbar()
       break;
     case 1:
-      addHistory()
+      if (!played) loadTime()
+
       toolbar.style.opacity = null
+
+      played = true
       break;
     case 2:
       showToolbar()
       break;
-
+    case 5:
+      played = false
+      break;
     default:
       break;
   }
@@ -274,16 +280,19 @@ async function getVideoFromClipboard() {
 function addHistory() {
 
   if (!currentVideo?.id) return
+  if (player.getPlayerState() === YT.PlayerState.CUED) return
   
   const historyExist = history.some((item) => item.id === currentVideo?.id)
 
   if (!historyExist) {
-    const newHistoryItem = { title: currentVideo.title, id: currentVideo?.id }
+    const newHistoryItem = { title: currentVideo.title, id: currentVideo?.id, startSeconds: player.getCurrentTime() }
 
     history.unshift(newHistoryItem)
     if (history.length > 3) history.pop()
   } else {
     const historyItem = history.find((item) => item.id === currentVideo?.id)
+
+    historyItem.startSeconds = player.getCurrentTime()
 
     history.splice(history.indexOf(historyItem), 1)
     
@@ -302,12 +311,27 @@ function updateHistory() {
 
     history.forEach((item) => {
       historyList.innerHTML += `
-        <button onclick="serveVideo('https://www.youtube.com/watch?v=${item.id}')" class="item">${item.title}</button>
+        <button onclick="serveVideo('https://www.youtube.com/watch?v=${item.id + (item.startSeconds ? ("?t=" + item.startSeconds) : "")}')" class="item">${item.title}</button>
       `
     })
   }
 }
 
+function saveTime() {
+  addHistory()
+  
+  setTimeout(() => {
+    saveTime()
+  }, 5000);
+}
+
+function loadTime() {
+  history.some((item) => {
+    if (item.id === currentVideo?.id && item.startSeconds && Math.abs(item.startSeconds - player.getCurrentTime()) >= 5) {
+      player.seekTo(item.startSeconds)
+    }
+  })
+}
 
 
 function pauseVideo() {
@@ -395,7 +419,7 @@ function replayVideo() {
 stopBtn.addEventListener("click", stopVideo)
 function stopVideo() {
   if (!currentVideo?.id || !playerIsReady) return
-  
+
   player.stopVideo()
 }
 
@@ -431,7 +455,7 @@ async function copyTitle() {
 
 
 
-function seek(amount) {
+function jump(amount) {
   if (!currentVideo?.id || !playerIsReady) return
 
   player.seekTo(player.getCurrentTime() + amount)
@@ -529,8 +553,8 @@ document.addEventListener("keydown", function(event) {
   }
   if (event.code === "KeyM") mute()
   // Jump backward/forward
-  if (event.code === 'KeyJ' || event.code === "ArrowLeft" || event.code === 'KeyA') seek(-5)
-  if (event.code === 'KeyL' || event.code === "ArrowRight" || event.code === 'KeyD') seek(5)
+  if (event.code === 'KeyJ' || event.code === "ArrowLeft" || event.code === 'KeyA') jump(-5)
+  if (event.code === 'KeyL' || event.code === "ArrowRight" || event.code === 'KeyD') jump(5)
   // Fullscreen
   if (event.code === 'KeyF') toggleFullscreen()
 })
@@ -555,6 +579,7 @@ document.addEventListener("DOMContentLoaded", function() {
   setupClipboard()
   updateHistory()
   update()
+  saveTime()
 })
 
 
