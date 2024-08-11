@@ -139,7 +139,11 @@ function onPlayerStateChange(event) {
       break;
     case 1:
       console.log("State: Playing.")
-      if (!played) loadTime()
+      if (!played) {
+        setTimeout(() => {
+          loadTime()
+        }, 3000);
+      }
 
       toolbar.style.opacity = null
 
