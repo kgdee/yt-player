@@ -523,8 +523,10 @@ function updateVideoDetailsModal() {
   const modalContent = videoDetailsModal.querySelector(".modal-content")
   modalContent.innerHTML = `
     <button onclick="openVideoDetailsModal()" class="close"><i class="bi bi-x"></i></button>
-    <h2 class="title">${currentVideo.title}</h2>
-    <p class="description">${currentVideo.description}</p>
+    <div class="viewport">
+      <h2 class="title">${currentVideo.title}</h2>
+      <p class="description">${currentVideo.description}</p>
+    </div>
   `
   makeLinksClickable(modalContent)
 }
