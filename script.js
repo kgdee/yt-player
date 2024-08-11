@@ -518,6 +518,8 @@ async function getVideoDetails(videoId) {
 
 
 function updateVideoDetailsModal() {
+  if (!currentVideo || !playerIsReady) return
+
   const modalContent = videoDetailsModal.querySelector(".modal-content")
   modalContent.innerHTML = `
     <button onclick="openVideoDetailsModal()" class="close"><i class="bi bi-x"></i></button>
