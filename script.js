@@ -25,7 +25,6 @@ let loading = false
 let playerIsReady = false
 let videoIsLocked = true
 let clipboardAllowed = false
-let played = false
 
 let history = JSON.parse(localStorage.getItem(storagePrefix + "history")) || []
 
@@ -138,18 +137,12 @@ function onPlayerStateChange(event) {
       showToolbar()
       break;
     case 1:
-      console.log("State: Playing.")
-      if (!played) loadTime()
-
       toolbar.style.opacity = null
-
-      played = true
       break;
     case 2:
       showToolbar()
       break;
     case 5:
-      played = false
       break;
     default:
       break;
@@ -207,7 +200,7 @@ async function serveVideo(url) {
   loading = true
 
   const videoDetails = getVideoDetailsFromUrl(url)
-  const { videoId, startSeconds } = videoDetails
+  let { videoId, startSeconds } = videoDetails
   
   if (videoId) {
     if (videoId === currentVideo?.id) {
@@ -219,6 +212,13 @@ async function serveVideo(url) {
         loading = false
         return
       }
+    } else {
+      
+      history.some(item=> {
+        if (item.id === videoId && !startSeconds) {
+          startSeconds = item.startSeconds
+        }
+      })
     }
 
     window.history.pushState(null, null, `?videoid=${videoId}`)
@@ -326,19 +326,6 @@ function saveTime() {
   }, 5000);
 }
 
-function loadTime() {
-  console.log("loadTime called.")
-  history.some((item) => {
-    if (item.id === currentVideo?.id && item.startSeconds && Math.abs(item.startSeconds - player.getCurrentTime()) >= 5) {
-      setTimeout(() => {
-        player.seekTo(item.startSeconds)
-      }, 3000);
-      console.log("player.seekTo called.")
-    }
-  })
-}
-
-
 function pauseVideo() {
   if (!currentVideo?.id || !playerIsReady) return
   
@@ -425,7 +412,10 @@ stopBtn.addEventListener("click", stopVideo)
 function stopVideo() {
   if (!currentVideo?.id || !playerIsReady) return
 
-  player.stopVideo()
+  // player.stopVideo()
+  const videoId = currentVideo.id
+  currentVideo = null
+  serveVideo(`https://www.youtube.com/watch?v=${videoId + "?t=" + player.getCurrentTime()}`)
 }
 
 resizeBtn.addEventListener("click", resizePlayer)
