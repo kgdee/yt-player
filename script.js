@@ -138,6 +138,7 @@ function onPlayerStateChange(event) {
       showToolbar()
       break;
     case 1:
+      console.log("State: Playing.")
       if (!played) loadTime()
 
       toolbar.style.opacity = null
@@ -326,9 +327,11 @@ function saveTime() {
 }
 
 function loadTime() {
+  console.log("loadTime called.")
   history.some((item) => {
     if (item.id === currentVideo?.id && item.startSeconds && Math.abs(item.startSeconds - player.getCurrentTime()) >= 5) {
       player.seekTo(item.startSeconds)
+      console.log("player.seekTo called.")
     }
   })
 }
