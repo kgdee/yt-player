@@ -263,6 +263,42 @@ body {
 }
 
 
+.video-details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.video-details-modal .modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  width: 300px;
+  min-height: 200px;
+  background-color: white;
+  color: #333;
+  border-radius: 10px;
+  padding: 1rem;
+  word-wrap: break-word;
+}
+
+.video-details-modal .modal-content .close {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 1.5rem;
+}
+
+.video-details-modal .modal-content .title {
+  font-size: 1.2rem;
+}
+
+
+
 .noticebox {
   position: fixed;
   top: 100px;

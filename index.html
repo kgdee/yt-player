@@ -34,23 +34,23 @@
 
     <div class="tools-container hidden" onclick="pauseVideo()">
       <div class="tools" onclick="stopPropagation(event)">
-        <button class="tool home tooltip">
+        <button onclick="goHome()" class="tool home tooltip">
           <i class="bi bi-house-door-fill"></i>
           <span class="tooltip-text">Home</span>
         </button>
     
-        <button class="tool lock tooltip hidden">
+        <button onclick="lockVideo()" class="tool lock tooltip hidden">
           <i class="bi bi-lock-fill"></i>
           <span class="tooltip-text">Unlock</span>
         </button>
 
-        <button class="tool play tooltip hidden">
+        <button onclick="getVideoFromClipboard()" class="tool play tooltip hidden">
           <i class="bi bi-play-fill"></i>
           <span class="tooltip-text">Play next</span>
         </button>
 
         <div class="tool-group volume">
-          <button class="tool volume-btn tooltip">
+          <button onclick="mute()" class="tool volume-btn tooltip">
             <i class="bi bi-volume-up-fill"></i>
             <span class="tooltip-text">Volume 25%</span>
           </button>
@@ -77,7 +77,7 @@
           </div>
         </div>
 
-        <button class="tool stop tooltip">
+        <button onclick="stopVideo()" class="tool stop tooltip">
           <i class="bi bi-stop-fill"></i>
           <span class="tooltip-text">Stop</span>
         </button>
@@ -89,24 +89,30 @@
           </button>
           <div class="tool-modal" onclick="hideToolModal(this)">
             <div class="modal-content">
-              <button class="tool replay tooltip">
+              <button onclick="replayVideo()" class="tool replay tooltip">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 <span class="tooltip-text">Replay</span>
               </button>
 
-              <button class="tool resize tooltip">
+              <button onclick="resizePlayer()" class="tool resize tooltip">
                 <i class="bi bi-aspect-ratio"></i>
                 <span class="tooltip-text">Resize</span>
               </button>
               
-              <button class="tool copy-title tooltip">
-                <i class="bi bi-clipboard"></i>
-                <span class="tooltip-text">Copy title</span>
+              <button onclick="openVideoDetailsModal()" class="tool video-details tooltip">
+                <i class="bi bi-card-list"></i>
+                <span class="tooltip-text">Video details</span>
               </button>
 
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="video-details-modal" onclick="openVideoDetailsModal()">
+      <div class="modal-content" onclick="stopPropagation(event)">
+        
       </div>
     </div>
 

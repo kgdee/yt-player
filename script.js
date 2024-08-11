@@ -8,16 +8,13 @@ const urlInput = document.querySelector(".url-input")
 const msg = document.querySelector(".msg")
 const quickBtn = document.querySelector(".quick-btn")
 const toolbar = document.querySelector(".tools-container")
-const homeBtn = document.querySelector(".tools .home")
 const lockBtn = document.querySelector(".tools .lock")
 const playBtn = document.querySelector(".tools .play")
 const volumeBtn = document.querySelector(".tools .volume-btn")
 const rateBtn = document.querySelector(".tools .rate .rate-btn")
-const replayBtn = document.querySelector(".tools .replay")
-const stopBtn = document.querySelector(".tools .stop")
 const resizeBtn = document.querySelector(".tools .resize")
-const copyTitleBtn = document.querySelector(".tools .copy-title")
 const historyList = document.querySelector(".history .list")
+const videoDetailsModal = document.querySelector(".video-details-modal")
 
 let currentVideo = null
 
@@ -54,7 +51,7 @@ function goHome() {
 
 const focusBtn = document.getElementById("focusBtn")
 function update() {
-  if (currentVideo?.id && playerIsReady) focusBtn.focus()
+  if (currentVideo && playerIsReady) focusBtn.focus()
   
   setTimeout(() => {
     update()
@@ -280,18 +277,18 @@ async function getVideoFromClipboard() {
 
 function addHistory() {
 
-  if (!currentVideo?.id) return
+  if (!currentVideo) return
   if (player.getPlayerState() === YT.PlayerState.CUED) return
   
-  const historyExist = history.some((item) => item.id === currentVideo?.id)
+  const historyExist = history.some((item) => item.id === currentVideo.id)
 
   if (!historyExist) {
-    const newHistoryItem = { title: currentVideo.title, id: currentVideo?.id, startSeconds: player.getCurrentTime() }
+    const newHistoryItem = { title: currentVideo.title, id: currentVideo.id, startSeconds: player.getCurrentTime() }
 
     history.unshift(newHistoryItem)
     if (history.length > 3) history.pop()
   } else {
-    const historyItem = history.find((item) => item.id === currentVideo?.id)
+    const historyItem = history.find((item) => item.id === currentVideo.id)
 
     historyItem.startSeconds = player.getCurrentTime()
 
@@ -327,19 +324,14 @@ function saveTime() {
 }
 
 function pauseVideo() {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
   
   const playing = player.getPlayerState() === YT.PlayerState.PLAYING
   playing ? player.pauseVideo() : player.playVideo()
 }
 
-
-
-homeBtn.addEventListener("click", goHome)
-
-lockBtn.addEventListener("click", lockVideo)
 function lockVideo() {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
 
   videoIsLocked = !videoIsLocked
 
@@ -349,12 +341,9 @@ function lockVideo() {
   : `<i class="bi bi-unlock-fill"></i><span class="tooltip-text">Lock</span>`
 }
 
-playBtn.addEventListener("click", ()=>getVideoFromClipboard())
 
-
-volumeBtn.addEventListener("click", mute)
 function mute() {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
 
   muted = !muted
   muted ? player.mute() : player.unMute()
@@ -364,7 +353,7 @@ function mute() {
 }
 
 function setVolume(volume) {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
 
   currentVolume = Math.min(Math.max(volume, 0), 100)
 
@@ -387,7 +376,7 @@ function updateVolumeBtn() {
 }
 
 function setPlayBackRate(value) {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
 
   player.setPlaybackRate(value)
 
@@ -400,17 +389,15 @@ function updateRateBtn(rate) {
   `
 }
 
-replayBtn.addEventListener("click", replayVideo)
 function replayVideo() {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
   
   player.seekTo(0)
   player.playVideo()
 }
 
-stopBtn.addEventListener("click", stopVideo)
 function stopVideo() {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
 
   // player.stopVideo()
   const videoId = currentVideo.id
@@ -418,7 +405,6 @@ function stopVideo() {
   serveVideo(`https://www.youtube.com/watch?v=${videoId + "?t=" + player.getCurrentTime()}`)
 }
 
-resizeBtn.addEventListener("click", resizePlayer)
 function resizePlayer() {
 
   currentWidth -= 10
@@ -437,7 +423,6 @@ function updateResizeBtn() {
   `
 }
 
-copyTitleBtn.addEventListener("click", copyTitle)
 async function copyTitle() {
   try {
     const title = currentVideo.title
@@ -451,7 +436,7 @@ async function copyTitle() {
 
 
 function jump(amount) {
-  if (!currentVideo?.id || !playerIsReady) return
+  if (!currentVideo || !playerIsReady) return
 
   player.seekTo(player.getCurrentTime() + amount)
 
@@ -531,6 +516,29 @@ async function getVideoDetails(videoId) {
   }
 }
 
+
+function updateVideoDetailsModal() {
+  const modalContent = videoDetailsModal.querySelector(".modal-content")
+  modalContent.innerHTML = `
+    <button onclick="openVideoDetailsModal()" class="close"><i class="bi bi-x"></i></button>
+    <h2 class="title">${currentVideo.title}</h2>
+    <p class="description">${currentVideo.description}</p>
+  `
+  makeLinksClickable(modalContent)
+}
+
+function openVideoDetailsModal() {
+  updateVideoDetailsModal()
+  videoDetailsModal.classList.toggle("hidden")
+}
+
+
+function makeLinksClickable(contentElement) {
+  const text = contentElement.innerHTML
+  const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
+  const replacedText = text.replace(urlPattern, (url) =>`<a href="${url}" target="_blank">${url}</a>`)
+  contentElement.innerHTML = replacedText
+}
 
 
 document.addEventListener("keydown", function(event) {
