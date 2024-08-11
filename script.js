@@ -139,11 +139,7 @@ function onPlayerStateChange(event) {
       break;
     case 1:
       console.log("State: Playing.")
-      if (!played) {
-        setTimeout(() => {
-          loadTime()
-        }, 3000);
-      }
+      if (!played) loadTime()
 
       toolbar.style.opacity = null
 
@@ -334,7 +330,9 @@ function loadTime() {
   console.log("loadTime called.")
   history.some((item) => {
     if (item.id === currentVideo?.id && item.startSeconds && Math.abs(item.startSeconds - player.getCurrentTime()) >= 5) {
-      player.seekTo(item.startSeconds)
+      setTimeout(() => {
+        player.seekTo(item.startSeconds)
+      }, 3000);
       console.log("player.seekTo called.")
     }
   })
