@@ -536,13 +536,19 @@ function openVideoDetailsModal() {
   videoDetailsModal.classList.toggle("hidden")
 }
 
-
 function makeLinksClickable(contentElement) {
   const text = contentElement.innerHTML
   const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig
   const replacedText = text.replace(urlPattern, (url) =>`<a href="${url}" target="_blank">${url}</a>`)
   contentElement.innerHTML = replacedText
 }
+
+function openVideoUrl() {
+  if (!currentVideo || !playerIsReady) return
+
+  window.open(player.getVideoUrl(), '_blank')
+}
+
 
 
 document.addEventListener("keydown", function(event) {
