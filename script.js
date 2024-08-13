@@ -193,24 +193,28 @@ function onPlayerError(event) {
 
 
 async function serveVideo(url) {
+
   if (!playerIsReady || loading) return
   loading = true
 
   const videoDetails = getVideoDetailsFromUrl(url)
   let { videoId, startSeconds } = videoDetails
-  
-  if (videoId) {
-    if (videoId === currentVideo?.id) {
-      if (!startSeconds || startSeconds === player.getCurrentTime()) {
-        loading = false
-        return
-      } else {
-        player.seekTo(startSeconds)
+
+  if (videoId || (!videoId && currentVideo)) {
+
+    if (!videoId) {
+      videoId = currentVideo.id
+      startSeconds = player.getCurrentTime()
+    }
+
+    if (player.getPlayerState() === YT.PlayerState.CUED) {
+      if (videoId === currentVideo?.id && startSeconds === player.getCurrentTime()) {
         loading = false
         return
       }
-    } else {
-      
+    }
+
+    if (!startSeconds) {
       history.some(item=> {
         if (item.id === videoId && !startSeconds) {
           startSeconds = item.startSeconds
@@ -232,12 +236,6 @@ async function serveVideo(url) {
   }
 }
 
-// function getVideoIdFromUrl(url) {
-//   // Extract video ID from YouTube URL
-//   const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|live\/|.*[?&]v=))([^"&?\/\s]{11})/);
-//   return videoIdMatch ? videoIdMatch[1] : null;
-// }
-
 function getVideoDetailsFromUrl(url) {
   // Extract video ID from YouTube URL
   const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|shorts\/|live\/|.*[?&]v=))([^"&?\/\s]{11})/);
@@ -254,7 +252,7 @@ function getVideoDetailsFromUrl(url) {
 }
 
 async function getVideoFromClipboard() {
-
+ 
   if (!document.hasFocus()) return
 
   if (loading) return
@@ -400,9 +398,7 @@ function stopVideo() {
   if (!currentVideo || !playerIsReady) return
 
   // player.stopVideo()
-  const videoId = currentVideo.id
-  currentVideo = null
-  serveVideo(`https://www.youtube.com/watch?v=${videoId + "?t=" + player.getCurrentTime()}`)
+  serveVideo(`https://www.youtube.com/watch?v=${currentVideo.id + "?t=" + player.getCurrentTime()}`)
 }
 
 function resizePlayer() {
@@ -508,7 +504,7 @@ async function getVideoDetails(videoId) {
     const data = await response.json()
 
     const videoDetails = { id: data.items[0].id, ...data.items[0]?.snippet }
-    // console.log(videoDetails)
+
     return videoDetails
   } catch (error) {
     console.error(error)
