@@ -181,6 +181,20 @@ body {
 }
 
 
+
+.block {
+  position: absolute;
+  top: 55px;
+  bottom: 55px;
+  right: 0;
+  width: 15%;
+  min-width: 75px;
+  border: 1px solid red;
+  opacity: 0;
+}
+
+
+
 .start-modal {
   position: fixed;
   top: 0;

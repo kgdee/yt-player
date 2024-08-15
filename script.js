@@ -217,7 +217,9 @@ async function serveVideo(url) {
     if (!startSeconds) {
       history.some(item=> {
         if (item.id === videoId && !startSeconds) {
-          startSeconds = item.startSeconds
+          const isPastFiveMinutes = new Date().getTime() - item.time > (5 * 60 * 1000)
+
+          startSeconds = isPastFiveMinutes ? Math.max(item.startSeconds - 10, 0) : item.startSeconds
         }
       })
     }
@@ -279,9 +281,10 @@ function addHistory() {
   if (player.getPlayerState() === YT.PlayerState.CUED) return
   
   const historyExist = history.some((item) => item.id === currentVideo.id)
+  const time = new Date().getTime()
 
   if (!historyExist) {
-    const newHistoryItem = { title: currentVideo.title, id: currentVideo.id, startSeconds: player.getCurrentTime() }
+    const newHistoryItem = { title: currentVideo.title, id: currentVideo.id, startSeconds: player.getCurrentTime(), time: time }
 
     history.unshift(newHistoryItem)
     if (history.length > 3) history.pop()
@@ -289,6 +292,7 @@ function addHistory() {
     const historyItem = history.find((item) => item.id === currentVideo.id)
 
     historyItem.startSeconds = player.getCurrentTime()
+    historyItem.time = time
 
     history.splice(history.indexOf(historyItem), 1)
     
@@ -307,7 +311,7 @@ function updateHistory() {
 
     history.forEach((item) => {
       historyList.innerHTML += `
-        <button onclick="serveVideo('https://www.youtube.com/watch?v=${item.id + (item.startSeconds ? ("?t=" + item.startSeconds) : "")}')" class="item">${item.title}</button>
+        <button onclick="serveVideo('https://www.youtube.com/watch?v=${item.id}')" class="item">${item.title}</button>
       `
     })
   }
