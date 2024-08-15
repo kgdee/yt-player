@@ -185,7 +185,7 @@ body {
 .block {
   position: absolute;
   top: 55px;
-  bottom: 55px;
+  bottom: 50vh;
   right: 0;
   width: 15%;
   min-width: 75px;
