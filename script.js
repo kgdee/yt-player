@@ -214,12 +214,16 @@ async function serveVideo(url) {
       }
     }
 
-    if (!startSeconds) {
+    if (!startSeconds && !player.getVideoData().isLive) {
       history.some(item=> {
         if (item.id === videoId && !startSeconds) {
+        
           const isPastFiveMinutes = new Date().getTime() - item.time > (5 * 60 * 1000)
+          let newStartSeconds = isPastFiveMinutes ? Math.max(item.startSeconds - 10, 0) : item.startSeconds
 
-          startSeconds = isPastFiveMinutes ? Math.max(item.startSeconds - 10, 0) : item.startSeconds
+          if (isPastFiveMinutes && (newStartSeconds > player.getDuration() - 10)) newStartSeconds = null
+
+          startSeconds = newStartSeconds
         }
       })
     }
