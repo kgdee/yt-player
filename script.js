@@ -214,7 +214,7 @@ async function serveVideo(url) {
       }
     }
 
-    if (!startSeconds && !player.getVideoData().isLive && player.getDuration()) {
+    if (!startSeconds && player.getDuration()) {
       history.some(item=> {
         if (item.id === videoId && !startSeconds) {
         
