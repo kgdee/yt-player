@@ -140,6 +140,21 @@ function onPlayerStateChange(event) {
       showToolbar()
       break;
     case 5:
+      const startSeconds = player.getCurrentTime()
+      
+      if (!startSeconds && player.getDuration()) {
+        history.some(item=> {
+          if (item.id === currentVideo.id && !startSeconds) {
+          
+            const isPastFiveMinutes = new Date().getTime() - item.time > (5 * 60 * 1000)
+            let newStartSeconds = isPastFiveMinutes ? Math.max(item.startSeconds - 10, 0) : item.startSeconds
+
+            if (isPastFiveMinutes && (newStartSeconds > player.getDuration() - 10)) newStartSeconds = null
+
+            serveVideo(`https://www.youtube.com/watch?v=${currentVideo.id + "?t=" + newStartSeconds}`)
+          }
+        })
+      }
       break;
     default:
       break;
@@ -214,24 +229,10 @@ async function serveVideo(url) {
       }
     }
 
-    if (!startSeconds && player.getDuration()) {
-      history.some(item=> {
-        if (item.id === videoId && !startSeconds) {
-        
-          const isPastFiveMinutes = new Date().getTime() - item.time > (5 * 60 * 1000)
-          let newStartSeconds = isPastFiveMinutes ? Math.max(item.startSeconds - 10, 0) : item.startSeconds
-
-          if (isPastFiveMinutes && (newStartSeconds > player.getDuration() - 10)) newStartSeconds = null
-
-          startSeconds = newStartSeconds
-        }
-      })
-    }
-
     window.history.pushState(null, null, `?videoid=${videoId}`)
 
-    player.cueVideoById(videoId, startSeconds)
     currentVideo = await getVideoDetails(videoId)
+    player.cueVideoById(videoId, startSeconds)
 
     displayPlayer()
     showToolbar()
