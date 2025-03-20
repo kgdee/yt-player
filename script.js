@@ -15,6 +15,7 @@ const rateBtn = document.querySelector(".tools .rate .rate-btn")
 const resizeBtn = document.querySelector(".tools .resize")
 const historyList = document.querySelector(".history .list")
 const videoDetailsModal = document.querySelector(".video-details-modal")
+const captionsBlock = document.querySelector(".captions-block")
 
 let currentVideo = null
 
@@ -554,6 +555,10 @@ function openVideoUrl() {
   window.open(player.getVideoUrl(), '_blank')
 }
 
+function toggleCaptionsBlock() {
+  captionsBlock.classList.toggle("hidden")
+}
+
 
 
 document.addEventListener("keydown", function(event) {
@@ -575,6 +580,8 @@ document.addEventListener("keydown", function(event) {
   if (event.code === 'KeyL' || event.code === "ArrowRight" || event.code === 'KeyD') jump(5)
   // Fullscreen
   if (event.code === 'KeyF') toggleFullscreen()
+  // Captions block
+  if (event.code === "KeyC") toggleCaptionsBlock()
 })
 
 document.addEventListener("visibilitychange", function() {

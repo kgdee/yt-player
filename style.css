@@ -182,7 +182,7 @@ body {
 
 
 
-.block {
+.hover-area {
   position: absolute;
   top: 55px;
   bottom: 50vh;
@@ -191,6 +191,16 @@ body {
   min-width: 75px;
   border: 1px solid red;
   opacity: 0;
+}
+
+.captions-block {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+
+  width: 100%;
+  height: 100px;
+  background-color: black;
 }
 
 
