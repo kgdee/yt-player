@@ -79,7 +79,7 @@ function showToolbar() {
   clearTimeout(toolbarTimeout)
   toolbarTimeout = setTimeout(() => {
     toolbar.style.opacity = null
-  }, 5000);
+  }, 3000);
 }
 
 // This code loads the IFrame Player API code asynchronously.
@@ -138,7 +138,6 @@ function onPlayerStateChange(event) {
       toolbar.style.opacity = null
       break;
     case 2:
-      showToolbar()
       break;
     case 5:
       const startSeconds = player.getCurrentTime()
