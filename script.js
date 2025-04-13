@@ -438,6 +438,16 @@ async function copyTitle() {
   }
 }
 
+async function copyLink() {
+  try {
+    const link = `https://www.youtube.com/watch?v=${currentVideo.id}`
+    await navigator.clipboard.writeText(link)
+    console.log('Video link copied to clipboard:', link)
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 
 
 function jump(amount) {
@@ -531,6 +541,10 @@ function updateVideoDetailsModal() {
     <div class="viewport">
       <h2 class="title">${currentVideo.title}</h2>
       <p class="description">${currentVideo.description}</p>
+    </div>
+    <div class="options">
+      <button onclick="copyTitle()">Copy title</button>
+      <button onclick="copyLink()">Copy link</button>
     </div>
   `
   makeLinksClickable(modalContent)
