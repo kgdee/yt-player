@@ -1,131 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YT Video Player</title>
-  <link rel="icon" href="favicon.png" type="image/x-icon">
-  <link rel="shortcut icon" href="favicon.png" type="image/x-icon">
-  <link rel="stylesheet" href="style.css">
-  <script src="script.js" defer></script>
-</head>
-<body>
-  <div class="app container">
-    <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
-    <div id="player"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Player</title>
+    <link rel="icon" href="favicon.png" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="scripts/constants.js" defer></script>
+    <script src="scripts/utils.js" defer></script>
+    <script src="scripts/toast.js" defer></script>
+    <script src="scripts/toolbar.js" defer></script>
+    <script src="scripts/main.js" defer></script>
+  </head>
+  <body class="dark-theme">
+    <div class="app container">
+      <div class="screen home-screen">
+        <h1 class="title">YouTube Player</h1>
 
-    <div class="overlay hidden hidden-cursor"></div>
+        <input class="url-input" type="text" placeholder="Paste Video URL" oninput="loadVideo(this.value)" autofocus />
+        <button class="button clipboard-btn hidden" onclick="getVideoFromClipboard()">or check my clipboard</button>
+        <p class="message"></p>
 
-    <div class="start-modal">
-      <div class="modal-content">
-        <h2><i class="bi bi-play-fill"></i>YT VIDEO PLAYER</h2>
-        <input class="url-input" type="text" placeholder="Paste Video URL..." oninput="serveVideo(this.value)" autofocus>
-        <button class="quick-btn hidden" onclick="getVideoFromClipboard()">Or check my clipboard!</button>
-        <p class="msg"></p>
-    
         <div class="history">
-          <h1>History</h1>
+          <h2 class="title">History</h2>
           <div class="list"></div>
         </div>
       </div>
-    </div>
 
-    <div class="tools-container hidden" onclick="pauseVideo()">
-      <div class="tools" onclick="stopPropagation(event)">
-        <button onclick="goHome()" class="tool home tooltip">
-          <i class="bi bi-house-door-fill"></i>
-          <span class="tooltip-text">Home</span>
-        </button>
-    
-        <button onclick="lockVideo()" class="tool lock tooltip hidden">
-          <i class="bi bi-lock-fill"></i>
-          <span class="tooltip-text">Unlock</span>
-        </button>
+      <div class="screen player-screen hidden">
+        <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+        <div id="player"></div>
 
-        <button onclick="getVideoFromClipboard()" class="tool play tooltip hidden">
-          <i class="bi bi-play-fill"></i>
-          <span class="tooltip-text">Play next</span>
-        </button>
-
-        <div class="tool-group volume">
-          <button onclick="mute()" class="tool volume-btn tooltip">
-            <i class="bi bi-volume-up-fill"></i>
-            <span class="tooltip-text">Volume 25%</span>
+        <div class="toolbar">
+          <button onclick="goHome()" class="item home tooltip">
+            <i class="bi bi-house-door-fill"></i>
+            <span class="tooltip-text">Home</span>
           </button>
-          <div class="tool-modal" onclick="hideToolModal(this)">
-            <div class="modal-content">
+
+          <button onclick="getVideoFromClipboard()" class="item play tooltip hidden">
+            <i class="bi bi-play-fill"></i>
+            <span class="tooltip-text">Play</span>
+          </button>
+
+          <div class="item-wrapper volume">
+            <button onclick="setVolume()" class="item volume-btn tooltip">
+              <i class="bi bi-volume-up-fill"></i>
+              <span class="tooltip-text">Volume 25%</span>
+            </button>
+            <div class="options" onclick="blink(this)">
               <button onclick="setVolume(25)">25%</button>
               <button onclick="setVolume(50)">50%</button>
               <button onclick="setVolume(75)">75%</button>
             </div>
           </div>
-        </div>
 
-        <div class="tool-group rate">
-          <button class="tool rate-btn tooltip">
-            <div class="text">1.5x</div>
-            <span class="tooltip-text">Playback speed 1.5</span>
-          </button>
-          <div class="tool-modal" onclick="hideToolModal(this)">
-            <div class="modal-content">
+          <div class="item-wrapper rate">
+            <button onclick="setPlayBackRate()" class="item rate-btn tooltip">
+              <div class="text">1.5x</div>
+              <span class="tooltip-text">Playback speed 1.5</span>
+            </button>
+            <div class="options" onclick="blink(this)">
               <button onclick="setPlayBackRate(0.75)">0.75x</button>
               <button onclick="setPlayBackRate(1)">1x</button>
               <button onclick="setPlayBackRate(1.25)">1.25x</button>
             </div>
           </div>
-        </div>
 
-        <button onclick="stopVideo()" class="tool stop tooltip hidden">
-          <i class="bi bi-stop-fill"></i>
-          <span class="tooltip-text">Stop</span>
-        </button>
-
-        <div class="tool-group other">
-          <button class="tool other-btn tooltip">
-            <i class="bi bi-three-dots"></i>
-            <span class="tooltip-text">Other</span>
-          </button>
-          <div class="tool-modal" onclick="hideToolModal(this)">
-            <div class="modal-content">
-              <button onclick="replayVideo()" class="tool replay tooltip">
+          <div class="item-wrapper more">
+            <button class="item more-btn tooltip">
+              <i class="bi bi-three-dots"></i>
+              <span class="tooltip-text">More</span>
+            </button>
+            <div class="options" onclick="blink(this)">
+              <button onclick="replayVideo()" class="item replay tooltip">
                 <i class="bi bi-arrow-counterclockwise"></i>
                 <span class="tooltip-text">Replay</span>
               </button>
 
-              <button onclick="resizePlayer()" class="tool resize tooltip hidden">
+              <button onclick="resizePlayer()" class="item resize tooltip hidden">
                 <i class="bi bi-aspect-ratio"></i>
                 <span class="tooltip-text">Resize</span>
               </button>
-              
-              <button onclick="openVideoDetailsModal()" class="tool video-details tooltip">
+
+              <button onclick="openDetailsModal()" class="item video-details tooltip">
                 <i class="bi bi-card-list"></i>
                 <span class="tooltip-text">Video details</span>
               </button>
-              
-              <button onclick="openVideoUrl()" class="tool open tooltip">
+
+              <button onclick="openVideoUrl()" class="item open tooltip">
                 <i class="bi bi-youtube"></i>
                 <span class="tooltip-text">Open in YouTube</span>
               </button>
+            </div>
+          </div>
+        </div>
 
+        <div class="hover-area" onclick="pauseVideo()"></div>
+
+        <div class="modal details-modal hidden" onclick="openDetailsModal()">
+          <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="openDetailsModal()" class="close"><i class="bi bi-x-lg"></i></button>
+            <h2 class="title">Video title</h2>
+            <p class="description">Video description</p>
+            <div class="actions">
+              <button class="button" onclick="copyTitle()">Copy title</button>
+              <button class="button" onclick="copyLink()">Copy link</button>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <div onclick="pauseVideo()">
-      <div class="captions-block hidden"></div>
-      <div class="hover-area"></div>
+      <div class="toast hidden"></div>
+      <button class="focus-btn"></button>
     </div>
-
-    <div class="video-details-modal hidden" onclick="openVideoDetailsModal()">
-      <div class="modal-content" onclick="stopPropagation(event)">
-        
-      </div>
-    </div>
-
-    <div class="noticebox hidden"></div>
-    <button id="focusBtn" style="position: absolute; left: 0; top: 0; transform: translateY(-100%);"></button>
-  </div>
-</body>
+  </body>
 </html>
