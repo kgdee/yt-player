@@ -17,10 +17,14 @@
     <div class="app container">
       <div class="screen home-screen">
         <h1 class="title">YouTube Player</h1>
+        <p class="subtitle text-muted">Your smooth, powerful, and personalized YT video player</p>
 
-        <input class="url-input" type="text" placeholder="Paste Video URL" oninput="loadVideo(this.value)" autofocus />
+        <div class="url-input">
+          <input type="text" placeholder="Paste Video URL" oninput="loadVideo()" autofocus />
+          <button onclick="loadVideo()"><i class="bi bi-search"></i></button>
+        </div>
         <button class="button clipboard-btn hidden" onclick="getVideoFromClipboard()">or check my clipboard</button>
-        <p class="message"></p>
+        <p class="message hidden"></p>
 
         <div class="history">
           <h2 class="title">History</h2>
@@ -83,7 +87,7 @@
                 <span class="tooltip-text">Resize</span>
               </button>
 
-              <button onclick="openDetailsModal()" class="item video-details tooltip">
+              <button onclick="toggleDetailsModal()" class="item video-details tooltip">
                 <i class="bi bi-card-list"></i>
                 <span class="tooltip-text">Video details</span>
               </button>
@@ -98,9 +102,9 @@
 
         <div class="hover-area" onclick="pauseVideo()"></div>
 
-        <div class="modal details-modal hidden" onclick="openDetailsModal()">
+        <div class="modal details-modal hidden" onclick="toggleDetailsModal()">
           <div class="modal-content" onclick="event.stopPropagation()">
-            <button onclick="openDetailsModal()" class="close"><i class="bi bi-x-lg"></i></button>
+            <button onclick="toggleDetailsModal()" class="close"><i class="bi bi-x-lg"></i></button>
             <h2 class="title">Video title</h2>
             <p class="description">Video description</p>
             <div class="actions">

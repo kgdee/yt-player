@@ -1,14 +1,14 @@
 const focusBtn = document.querySelector(".focus-btn");
 const homeScreen = document.querySelector(".home-screen");
 const playerScreen = document.querySelector(".player-screen");
-const urlInput = homeScreen.querySelector(".url-input");
+const urlInput = homeScreen.querySelector(".url-input input");
 const messageEl = homeScreen.querySelector(".message");
 const clipboardBtn = homeScreen.querySelector(".clipboard-btn");
 const historyList = document.querySelector(".history .list");
 const detailsModal = document.querySelector(".details-modal");
 
 let currentVideo = null;
-let loading = false;
+let isLoading = false;
 let isPlayerReady = false;
 let hasClipboardAccess = false;
 let histories = load("histories", []);
@@ -39,12 +39,17 @@ function handleHistory() {
   }, 5000);
 }
 
+function toggleMessageEl(message = "") {
+  messageEl.textContent = message;
+  messageEl.classList.toggle("hidden", !message);
+}
+
 function goHome() {
   window.history.pushState(null, null, window.location.pathname);
 
   document.title = "YT Video Player";
   urlInput.value = "";
-  messageEl.innerHTML = "";
+  toggleMessageEl();
   show(homeScreen);
   currentVideo = null;
   changeScreen("home-screen");
@@ -62,7 +67,7 @@ function displayPlayer() {
   Toolbar.show();
   changeScreen("player-screen");
 
-  loading = false;
+  isLoading = false;
 }
 
 // This code loads the IFrame Player API code asynchronously.
@@ -132,27 +137,27 @@ function onPlaybackRateChange(event) {
 }
 
 function onPlayerError(event) {
-  console.error("An error occurred: ", event.data);
+  console.error("YouTube Player API error: ", event.data);
   goHome();
-  loading = false;
-  messageEl.textContent = `YouTube Player API error: ${event.data}`;
+  isLoading = false;
+  toggleMessageEl(`YouTube Player API error: ${event.data}`);
 }
 
-async function loadVideo(url) {
-  if (!isPlayerReady || loading) return;
-  loading = true;
+async function loadVideo(url = urlInput.value, shouldShowMsg = true) {
+  if (!isPlayerReady || isLoading) return;
+  isLoading = true;
 
   let { videoId = currentVideo?.id, startSeconds = player?.getCurrentTime() } = getVideoCue(url);
 
   if (!videoId) {
     urlInput.value = "";
-    messageEl.textContent = "Error: Invalid URL";
-    loading = false;
+    if (shouldShowMsg) toggleMessageEl("Please enter a valid video URL");
+    isLoading = false;
     return;
   }
 
   if (videoId === currentVideo?.id) {
-    loading = false;
+    isLoading = false;
     return;
   }
 
@@ -179,20 +184,20 @@ function getVideoCue(url) {
   };
 }
 
-async function getVideoFromClipboard() {
-  await sleep(1000)
+async function getVideoFromClipboard(shouldShowMsg = true) {
+  await sleep(1000);
   if (!document.hasFocus()) return;
 
-  if (loading) return;
-  loading = true;
+  if (isLoading) return;
+  isLoading = true;
 
-  const clipboardText = await readClipboard()
+  const clipboardText = await readClipboard();
 
-  loading = false;
+  isLoading = false;
 
   if (!clipboardText) return;
 
-  loadVideo(clipboardText);
+  loadVideo(clipboardText, shouldShowMsg);
 }
 
 function addHistory() {
@@ -221,12 +226,14 @@ function updateHistoryList() {
 
   document.querySelector(".history").classList.toggle("hidden", !hasHistories);
   historyList.innerHTML = hasHistories
-    ? histories.map((history) => {
-        const time = Math.max(0, history.time - 5);
-        return `
+    ? histories
+        .map((history) => {
+          const time = Math.max(0, history.time - 5);
+          return `
           <button onclick="loadVideo('https://www.youtube.com/watch?v=${history.id}?t=${time}')" class="item truncated">${history.title}</button>
           `;
-      })
+        })
+        .join("")
     : "";
 }
 
@@ -260,7 +267,7 @@ function setVolume(value) {
   if (!currentVideo || !isPlayerReady) return;
 
   currentVolume = value != null ? value : (currentVolume + 25) % 125;
-  currentVolume = clamp(currentVolume, 0, 100)
+  currentVolume = clamp(currentVolume, 0, 100);
   player.setVolume(currentVolume);
   save("currentVolume", currentVolume);
 
@@ -271,7 +278,7 @@ function setPlayBackRate(value) {
   if (!currentVideo || !isPlayerReady) return;
 
   currentRate = value != null ? value : (currentRate + 0.25) % 1.5;
-  currentRate = clamp(currentRate, 0.75, 1.25)
+  currentRate = clamp(currentRate, 0.75, 1.25);
   player.setPlaybackRate(currentRate);
   save("currentRate", currentRate);
 
@@ -288,35 +295,25 @@ function replayVideo() {
 async function copyTitle() {
   const title = currentVideo.title;
   await navigator.clipboard.writeText(title);
-  console.log("Video title copied to clipboard:", title);
+  Toast.show("Video title copied to clipboard")
 }
 
 async function copyLink() {
   const link = `https://www.youtube.com/watch?v=${currentVideo.id}`;
   await navigator.clipboard.writeText(link);
-  console.log("Video link copied to clipboard:", link);
+  Toast.show("Video link copied to clipboard")
 }
 
 function jump(amount) {
   if (!currentVideo || !isPlayerReady) return;
 
   player.seekTo(player.getCurrentTime() + amount);
-  Toast(`${amount} seconds`);
-}
-
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.body.requestFullscreen().catch((err) => {
-      console.error("Error attempting to enable full-screen mode:", err);
-    });
-  } else {
-    document.exitFullscreen();
-  }
+  Toast.show(`${amount} seconds`);
 }
 
 async function getClipboardAccess() {
-  const clipboardText = await readClipboard()
-  if (!clipboardText) return
+  const clipboardText = await readClipboard();
+  if (!clipboardText) return;
 
   hasClipboardAccess = true;
   clipboardBtn.classList.remove("hidden");
@@ -341,7 +338,7 @@ function updateDetailsModal() {
   createLinks(descriptionEl);
 }
 
-function openDetailsModal() {
+function toggleDetailsModal() {
   updateDetailsModal();
   detailsModal.classList.toggle("hidden");
 }
@@ -352,35 +349,40 @@ function openVideoUrl() {
   window.open(player.getVideoUrl(), "_blank");
 }
 
-document.addEventListener("keydown", function (event) {
-  const shortcuts = {
-    pause: event.code === "Space" || event.key === " " || event.code === "KeyK",
-    volumeUp: event.code === "ArrowUp" || event.code === "KeyW" || event.code === "KeyI",
-    volumeDown: event.code === "ArrowDown" || event.code === "KeyS" || event.code === "KeyU",
-    mute: event.code === "KeyM",
-    jumpForward: event.code === "KeyL" || event.code === "ArrowRight" || event.code === "KeyD",
-    jumpBackward: event.code === "KeyJ" || event.code === "ArrowLeft" || event.code === "KeyA",
-    fullscreen: event.code === "KeyF",
-  };
-  if (shortcuts.pause) pauseVideo();
-  if (shortcuts.volumeDown || shortcuts.volumeUp) {
-    let amount = 5;
-    if (shortcuts.volumeUp) {
-      amount = currentVolume < 5 ? 1 : 5;
-    } else {
-      amount = currentVolume <= 5 ? -1 : -5;
-    }
-    setVolume(currentVolume + amount);
-  }
-  if (shortcuts.mute) mute();
-  if (shortcuts.jumpForward) jump(5);
-  if (shortcuts.jumpBackward) jump(-5);
-  if (shortcuts.fullscreen) toggleFullscreen();
-});
+function adjustVolume(volumeUp) {
+  const increment = volumeUp ? (currentVolume < 5 ? 1 : 5) : currentVolume <= 5 ? -1 : -5;
+  setVolume(currentVolume + increment);
+}
 
 document.addEventListener("visibilitychange", async function () {
-
   await getClipboardAccess();
 
-  getVideoFromClipboard();
+  getVideoFromClipboard(false);
+});
+
+const keyActions = {
+  Space: pauseVideo,
+  KeyK: pauseVideo,
+  ArrowUp: () => adjustVolume(true),
+  KeyW: () => adjustVolume(true),
+  KeyI: () => adjustVolume(true),
+  ArrowDown: () => adjustVolume(false),
+  KeyS: () => adjustVolume(false),
+  KeyU: () => adjustVolume(false),
+  KeyM: mute,
+  KeyL: () => jump(5),
+  ArrowRight: () => jump(5),
+  KeyD: () => jump(5),
+  KeyJ: () => jump(-5),
+  ArrowLeft: () => jump(-5),
+  KeyA: () => jump(-5),
+  KeyF: toggleFullscreen,
+};
+
+document.addEventListener("keydown", (event) => {
+  const action = keyActions[event.code];
+  if (action) {
+    event.preventDefault();
+    action();
+  }
 });

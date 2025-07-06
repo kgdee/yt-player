@@ -56,32 +56,6 @@ function getFileDataUrl(file) {
   });
 }
 
-function getFileText(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => resolve(event.target.result);
-    reader.onerror = (error) => reject(error);
-    reader.readAsText(file);
-  });
-}
-
-async function convertSrtToVtt(srtFile) {
-  if (!srtFile) return "";
-
-  let srtText = await getFileText(srtFile);
-
-  // Convert SRT to VTT format
-  let vttText =
-    "WEBVTT\n\n" +
-    srtText
-      .replace(/\r\n|\r|\n/g, "\n") // Normalize new lines
-      .replace(/(\d+)\n(\d{2}:\d{2}:\d{2}),(\d{3}) --> (\d{2}:\d{2}:\d{2}),(\d{3})/g, "$1\n$2.$3 --> $4.$5");
-
-  const blob = new Blob([vttText], { type: "text/vtt" });
-  const dataUrl = URL.createObjectURL(blob);
-  return dataUrl;
-}
-
 function changeScreen(screenName) {
   document.querySelectorAll(".screen").forEach((element) => {
     element.classList.add("hidden");
@@ -109,4 +83,9 @@ async function readClipboard() {
   const clipboardText = await navigator.clipboard.readText();
 
   return clipboardText;
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.body.requestFullscreen();
+  else document.exitFullscreen();
 }

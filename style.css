@@ -140,6 +140,10 @@ input {
   font-size: 1.5rem;
 }
 
+.text-muted {
+  opacity: 0.8;
+}
+
 body {
   font-family: "Poppins", sans-serif;
   background-color: var(--bg-color);
@@ -169,6 +173,43 @@ body {
   align-items: center;
   justify-content: center;
   gap: 25px;
+  padding: 10px;
+  text-align: center;
+}
+
+.home-screen .url-input {
+  display: flex;
+  gap: 10px;
+  width: 300px;
+}
+
+.home-screen .url-input input {
+  flex: 1;
+}
+
+.home-screen .url-input button {
+  background-color: transparent;
+  color: var(--text-color);
+}
+
+
+.home-screen .history {
+  width: 300px;
+}
+
+.home-screen .history .title {
+  font-size: 1rem;
+}
+
+.home-screen .history .list {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-screen .history .list .item {
+  background-color: transparent;
+  color: var(--text-color);
+  padding: 10px 0;
 }
 
 #player {
@@ -260,24 +301,6 @@ body {
   min-width: 75px;
   border: 1px solid red;
   opacity: 0;
-}
-
-.history .title {
-  text-align: center;
-  font-size: 1rem;
-  margin-bottom: 10px;
-}
-
-.history .list {
-  display: flex;
-  flex-direction: column;
-  width: 300px;
-}
-
-.history .list .item {
-  background-color: transparent;
-  color: var(--text-color);
-  padding: 5px;
 }
 
 .details-modal .description {
