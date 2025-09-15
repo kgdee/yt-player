@@ -105,7 +105,6 @@ function onPlayerReady(event) {
 
   const videoId = urlParams.get("videoid");
   if (videoId) loadVideo(`https://www.youtube.com/watch?v=${videoId}`);
-  else if (hasClipboardAccess) getVideoFromClipboard();
 }
 
 function onPlayerStateChange(event) {
@@ -353,12 +352,6 @@ function adjustVolume(volumeUp) {
   const increment = volumeUp ? (currentVolume < 5 ? 1 : 5) : currentVolume <= 5 ? -1 : -5;
   setVolume(currentVolume + increment);
 }
-
-document.addEventListener("visibilitychange", async function () {
-  await getClipboardAccess();
-
-  getVideoFromClipboard(false);
-});
 
 const keyActions = {
   Space: pauseVideo,
