@@ -23,6 +23,10 @@ document.addEventListener("DOMContentLoaded", function () {
   handleHistory();
 });
 
+document.addEventListener("visibilitychange", async function () {
+  await getClipboardAccess();
+});
+
 function maintainFocus() {
   if (currentVideo && isPlayerReady) focusBtn.focus();
 
